@@ -1,0 +1,12 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.xingren.imaging">
+
+    <application>
+
+        <activity android:name=".ImageGalleryActivity" />
+
+        <activity android:name=".ImageEditActivity" />
+
+    </application>
+
+</manifest>
