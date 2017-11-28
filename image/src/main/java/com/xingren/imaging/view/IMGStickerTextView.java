@@ -15,10 +15,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.xingren.imaging.R;
-import com.xingren.imaging.core.IMGStickerAdjustHelper;
-import com.xingren.imaging.core.IMGSticker;
-import com.xingren.imaging.core.IMGStickerHelper;
-import com.xingren.imaging.core.IMGStickerMoveHelper;
+import com.xingren.imaging.core.sticker.IMGStickerAdjustHelper;
+import com.xingren.imaging.core.sticker.IMGSticker;
+import com.xingren.imaging.core.sticker.IMGStickerHelper;
+import com.xingren.imaging.core.sticker.IMGStickerMoveHelper;
 
 /**
  * Created by felix on 2017/11/14 下午7:27.

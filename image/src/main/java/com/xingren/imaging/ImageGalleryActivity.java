@@ -1,12 +1,11 @@
 package com.xingren.imaging;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
 
 /**
  * Created by felix on 2017/11/14 上午11:30.
  */
 
-public class ImageGalleryActivity extends AppCompatActivity {
-
+public class ImageGalleryActivity extends Activity {
 
 }

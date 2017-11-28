@@ -1,4 +1,4 @@
-package com.xingren.imaging.core;
+package com.xingren.imaging.core.sticker;
 
 import android.graphics.Matrix;
 import android.view.MotionEvent;
