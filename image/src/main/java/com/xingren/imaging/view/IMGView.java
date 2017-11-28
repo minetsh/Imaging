@@ -11,7 +11,6 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import com.xingren.imaging.R;
-import com.xingren.imaging.core.IMGImage;
 import com.xingren.imaging.core.sticker.IMGSticker;
 
 /**
@@ -48,10 +47,7 @@ public class IMGView extends FrameLayout {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        IMGImage image = mDelegate.getImage();
-        if (image != null) {
-            image.onDraw(canvas);
-        }
+        mDelegate.onDraw(canvas);
     }
 
     public <V extends View & IMGSticker> void addStickerView(V stickerView) {

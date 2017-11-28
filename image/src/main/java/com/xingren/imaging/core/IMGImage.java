@@ -46,7 +46,7 @@ public class IMGImage {
     /**
      * 编辑模式
      */
-    private IMGMode mMode = IMGMode.NONE;
+    private IMGMode mMode = IMGMode.DOODLE;
 
     private float mWindowPivotX, mWindowPivotY;
 
@@ -66,6 +66,16 @@ public class IMGImage {
      * 为被选中贴片
      */
     private List<IMGSticker> mBackStickers = new ArrayList<>();
+
+    /**
+     * 涂鸦路径
+     */
+    private List<IMGPath> mDoodles = new ArrayList<>();
+
+    /**
+     * 马赛克路径
+     */
+    private List<IMGPath> mMosaics = new ArrayList<>();
 
     private static final int MIN_SIZE = 500;
 
@@ -143,6 +153,12 @@ public class IMGImage {
     public <S extends IMGSticker> void addSticker(S sticker) {
         if (sticker != null) {
             moveToForeground(sticker);
+        }
+    }
+
+    public void addDoodle(IMGPath doodle) {
+        if (doodle != null) {
+            mDoodles.add(doodle);
         }
     }
 
@@ -243,7 +259,7 @@ public class IMGImage {
         return new PointF(mFrame.centerX(), mFrame.centerY());
     }
 
-    public void onDraw(Canvas canvas) {
+    public void onDrawImage(Canvas canvas) {
 //        canvas.clipRect(mClipFrame);
         canvas.drawBitmap(mImage, null, mFrame, null);
 
@@ -254,6 +270,29 @@ public class IMGImage {
 
 //        canvas.drawRect(mHomeFrame, P);
 
+    }
+
+    public void onDrawDoodles(Canvas canvas) {
+        if (!mDoodles.isEmpty()) {
+            canvas.save();
+            for (IMGPath path : mDoodles) {
+                path.onDraw(canvas);
+            }
+            canvas.restore();
+        }
+    }
+
+    public void onDrawMosaics(Canvas canvas) {
+        if (!mMosaics.isEmpty()) {
+            canvas.save();
+            for (IMGPath path : mMosaics) {
+                path.onDraw(canvas);
+            }
+            canvas.restore();
+        }
+    }
+
+    public void onDrawStickers(Canvas canvas) {
         for (IMGSticker sticker : mBackStickers) {
             if (!sticker.isShowing()) {
                 float tPivotX = sticker.getX() + sticker.getPivotX();
@@ -268,7 +307,6 @@ public class IMGImage {
                 canvas.restore();
             }
         }
-
     }
 
     public void onTouch() {
@@ -305,6 +343,10 @@ public class IMGImage {
         M.mapRect(mFrame);
         M.mapRect(mClipFrame);
 
+        for (IMGPath doodle : mDoodles) {
+            doodle.transform(M);
+        }
+
         for (IMGSticker sticker : mBackStickers) {
             M.mapRect(sticker.getFrame());
             float tPivotX = sticker.getX() + sticker.getPivotX();
@@ -314,6 +356,8 @@ public class IMGImage {
             sticker.setX(sticker.getX() + sticker.getFrame().centerX() - tPivotX);
             sticker.setY(sticker.getY() + sticker.getFrame().centerY() - tPivotY);
         }
+
+        IMGPath.setStrokeWidthScale(getScale());
     }
 
     public void onScaleEnd() {

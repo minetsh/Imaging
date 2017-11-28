@@ -2,7 +2,10 @@ package com.xingren.imaging.view;
 
 import android.animation.ValueAnimator;
 import android.graphics.Bitmap;
-import android.graphics.RectF;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -10,6 +13,7 @@ import android.view.View;
 
 import com.xingren.imaging.core.IMGImage;
 import com.xingren.imaging.core.IMGMode;
+import com.xingren.imaging.core.IMGPath;
 import com.xingren.imaging.core.anim.IMGHomingAnimator;
 import com.xingren.imaging.core.homing.IMGHoming;
 import com.xingren.imaging.core.sticker.IMGSticker;
@@ -35,6 +39,16 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
     private ScaleGestureDetector mScaleGestureDetector;
 
     private IMGHomingAnimator mHomingAnimator;
+
+    private Path mPath = new Path();
+
+    private static final Paint P = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+    static {
+        P.setColor(Color.RED);
+        P.setStrokeWidth(2);
+        P.setStyle(Paint.Style.STROKE);
+    }
 
     IMGDelegate(IMGView view) {
         mView = view;
@@ -79,6 +93,29 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
         return handled;
     }
 
+    void onDraw(Canvas canvas) {
+
+        mImage.onDrawImage(canvas);
+        mImage.onDrawMosaics(canvas);
+        mImage.onDrawDoodles(canvas);
+
+        switch (mImage.getMode()) {
+            case DOODLE:
+                onDrawPath(canvas);
+                break;
+        }
+
+        mImage.onDrawStickers(canvas);
+    }
+
+    private void onDrawPath(Canvas canvas) {
+        canvas.save();
+
+        canvas.drawPath(mPath, P);
+
+        canvas.restore();
+    }
+
     private boolean onTouchNONE(MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_UP:
@@ -95,41 +132,27 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
                 mImage.onTouch();
                 mX = event.getX();
                 mY = event.getY();
+                mPath.reset();
+                mPath.moveTo(mX, mY);
+                mView.invalidate();
+                return true;
+            case MotionEvent.ACTION_MOVE:
+                mPath.lineTo(event.getX(), event.getY());
+                mView.invalidate();
                 return true;
             case MotionEvent.ACTION_UP:
-
+                IMGPath path = new IMGPath(new Path(mPath), IMGMode.DOODLE, Color.RED);
+                mImage.addDoodle(path);
+                mView.invalidate();
                 return true;
         }
         return false;
     }
 
     private void onHoming() {
-
-
-        final RectF frame = mImage.getFrame();
-
-
-        float x = mView.getScrollX();
-        float y = mView.getScrollY();
-        final RectF startRect = new RectF(mImage.getFrame());
-        startRect.offsetTo(x, y);
-
-
-        float tx = frame.centerX() - mView.getPivotX();
-        float ty = frame.centerY() - mView.getPivotY();
-        final RectF endRect = new RectF(tx, ty, tx + 500, ty + 500);
-
-        float scale = mImage.getScale();
-
-        final float pivotX = frame.centerX(), pivotY = frame.centerY();
-
-        IMGHoming startHoming = new IMGHoming(startRect.left, startRect.top, scale);
-        IMGHoming endHoming = new IMGHoming(endRect.left, endRect.top, scale * endRect.width() / frame.width());
-
-
-        RectF winr = new RectF(mView.getScrollX(), mView.getScrollY(), mView.getScrollX() + mView.getWidth(), mView.getScrollY() + mView.getHeight());
-
-        startHoming(mImage.getStartHoming(mView.getScrollX(), mView.getScrollY()), mImage.getEndHoming(mView.getScrollX(), mView.getScrollY()));
+        startHoming(mImage.getStartHoming(mView.getScrollX(), mView.getScrollY()),
+                mImage.getEndHoming(mView.getScrollX(), mView.getScrollY())
+        );
     }
 
     private void startHoming(IMGHoming sHoming, IMGHoming eHoming) {
@@ -158,7 +181,10 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
-        mImage.onScale(detector.getScaleFactor(), mView.getScrollX() + detector.getFocusX(), mView.getScrollY() + detector.getFocusY());
+        mImage.onScale(detector.getScaleFactor(),
+                mView.getScrollX() + detector.getFocusX(),
+                mView.getScrollY() + detector.getFocusY());
+
         mView.invalidate();
         return true;
     }
@@ -193,6 +219,12 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             return onScrollBy(distanceX, distanceY);
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            // TODO
+            return super.onFling(e1, e2, velocityX, velocityY);
         }
     }
 
