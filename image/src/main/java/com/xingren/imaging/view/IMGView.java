@@ -38,7 +38,11 @@ public class IMGView extends FrameLayout {
 
     private void initialize(Context context) {
         mDelegate = new IMGDelegate(this);
-        mDelegate.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.am));
+        BitmapFactory.Options options = new BitmapFactory.Options();
+
+
+
+        mDelegate.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.am, options));
     }
 
     public void setImageBitmap(Bitmap image) {
@@ -48,6 +52,12 @@ public class IMGView extends FrameLayout {
     @Override
     protected void onDraw(Canvas canvas) {
         mDelegate.onDraw(canvas);
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        mDelegate.onLayout(changed, left, top, right, bottom);
     }
 
     public <V extends View & IMGSticker> void addStickerView(V stickerView) {

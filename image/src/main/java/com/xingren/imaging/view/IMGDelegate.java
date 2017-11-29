@@ -24,7 +24,7 @@ import com.xingren.imaging.core.sticker.IMGStickerPortrait;
  */
 
 class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
-        View.OnLayoutChangeListener, ValueAnimator.AnimatorUpdateListener, IMGStickerPortrait.Callback {
+        ValueAnimator.AnimatorUpdateListener, IMGStickerPortrait.Callback {
 
     private static final String TAG = "IMGDelegate";
 
@@ -34,13 +34,17 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
     private IMGImage mImage = new IMGImage();
 
-    private GestureDetector mGestureDetector;
+    private GestureDetector mGDetector;
 
-    private ScaleGestureDetector mScaleGestureDetector;
+    private ScaleGestureDetector mSGDetector;
 
     private IMGHomingAnimator mHomingAnimator;
 
     private Path mPath = new Path();
+
+    private int mPathId = -2;
+
+    private int mPointerCount = 0;
 
     private static final Paint P = new Paint(Paint.ANTI_ALIAS_FLAG);
 
@@ -52,14 +56,15 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
     IMGDelegate(IMGView view) {
         mView = view;
-        mView.addOnLayoutChangeListener(this);
-        mGestureDetector = new GestureDetector(view.getContext(), new MoveAdapter());
-        mScaleGestureDetector = new ScaleGestureDetector(view.getContext(), this);
+        mGDetector = new GestureDetector(view.getContext(), new MoveAdapter());
+        mSGDetector = new ScaleGestureDetector(view.getContext(), this);
     }
 
     void setImageBitmap(Bitmap image) {
         mImage.setBitmap(image);
         mView.invalidate();
+
+
     }
 
     IMGImage getImage() {
@@ -78,42 +83,63 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
     }
 
     boolean onTouch(MotionEvent event) {
-        if (isHoming()) return false;
+        if (isHoming()) {
+            // Homing
+            return false;
+        }
 
-        boolean handled = mScaleGestureDetector.onTouchEvent(event);
+        mPointerCount = event.getPointerCount();
+
+        boolean handled = mSGDetector.onTouchEvent(event);
+
         IMGMode mode = mImage.getMode();
-        if (mode == IMGMode.NONE) {
+
+        if (mode == IMGMode.NONE || mode == IMGMode.CROP) {
+            handled |= onTouchNONE(event);
+        } else if (mPointerCount > 1) {
+            onPathDone();
             handled |= onTouchNONE(event);
         } else {
-            switch (mode) {
-                case DOODLE:
-                    return onTouchDOODLE(event);
-            }
+            handled |= onTouchPath(event);
         }
+
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                onHoming();
+                break;
+        }
+
         return handled;
     }
 
     void onDraw(Canvas canvas) {
 
+        // 图片
         mImage.onDrawImage(canvas);
+
+        // 马赛克
         mImage.onDrawMosaics(canvas);
+
+        // 涂鸦
         mImage.onDrawDoodles(canvas);
 
+        canvas.save();
+        canvas.translate(mView.getScrollX(), mView.getScrollY());
         switch (mImage.getMode()) {
             case DOODLE:
                 onDrawPath(canvas);
                 break;
         }
+        canvas.restore();
 
         mImage.onDrawStickers(canvas);
     }
 
     private void onDrawPath(Canvas canvas) {
-        canvas.save();
-
-        canvas.drawPath(mPath, P);
-
-        canvas.restore();
+        if (!mPath.isEmpty()) {
+            canvas.drawPath(mPath, P);
+        }
     }
 
     private boolean onTouchNONE(MotionEvent event) {
@@ -123,36 +149,63 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
                 break;
         }
 
-        return mGestureDetector.onTouchEvent(event);
+        return mGDetector.onTouchEvent(event);
     }
 
-    private boolean onTouchDOODLE(MotionEvent event) {
+    private boolean onTouchPath(MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 mImage.onTouch();
-                mX = event.getX();
-                mY = event.getY();
-                mPath.reset();
-                mPath.moveTo(mX, mY);
-                mView.invalidate();
-                return true;
+                return onPathBegin(event);
             case MotionEvent.ACTION_MOVE:
-                mPath.lineTo(event.getX(), event.getY());
-                mView.invalidate();
-                return true;
+                return onPathMove(event);
             case MotionEvent.ACTION_UP:
-                IMGPath path = new IMGPath(new Path(mPath), IMGMode.DOODLE, Color.RED);
-                mImage.addDoodle(path);
-                mView.invalidate();
-                return true;
+            case MotionEvent.ACTION_CANCEL:
+                return mPathId == event.getPointerId(0) && onPathDone();
         }
         return false;
     }
 
+    private boolean onPathBegin(MotionEvent event) {
+        mPath.reset();
+        mPath.moveTo(event.getX(), event.getY());
+        mPathId = event.getPointerId(0);
+        return true;
+    }
+
+    private boolean onPathMove(MotionEvent event) {
+        if (mPathId == event.getPointerId(0)) {
+            mPath.lineTo(event.getX(), event.getY());
+            mView.invalidate();
+            return true;
+        }
+        return false;
+    }
+
+    private boolean onPathDone() {
+        if (mPath.isEmpty()) {
+            return false;
+        }
+
+        IMGMode mode = mImage.getMode();
+        if (mode == IMGMode.DOODLE) {
+            IMGPath path = new IMGPath(new Path(mPath), mode, Color.RED);
+            mImage.addDoodle(path, mView.getScrollX(), mView.getScrollY());
+        } else if (mode == IMGMode.MOSAIC) {
+            IMGPath path = new IMGPath(new Path(mPath), mode);
+            mImage.addMosaic(path, mView.getScrollX(), mView.getScrollY());
+        }
+
+        mPath.reset();
+        mPathId = -2;
+
+        mView.invalidate();
+        return true;
+    }
+
     private void onHoming() {
         startHoming(mImage.getStartHoming(mView.getScrollX(), mView.getScrollY()),
-                mImage.getEndHoming(mView.getScrollX(), mView.getScrollY())
-        );
+                mImage.getEndHoming(mView.getScrollX(), mView.getScrollY()));
     }
 
     private void startHoming(IMGHoming sHoming, IMGHoming eHoming) {
@@ -175,18 +228,24 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
     @Override
     public boolean onScaleBegin(ScaleGestureDetector detector) {
-        mImage.onScaleBegin();
-        return true;
+        if (mPointerCount > 1) {
+            mImage.onScaleBegin();
+            return true;
+        }
+        return false;
     }
 
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
-        mImage.onScale(detector.getScaleFactor(),
-                mView.getScrollX() + detector.getFocusX(),
-                mView.getScrollY() + detector.getFocusY());
+        if (mPointerCount > 1) {
+            mImage.onScale(detector.getScaleFactor(),
+                    mView.getScrollX() + detector.getFocusX(),
+                    mView.getScrollY() + detector.getFocusY());
 
-        mView.invalidate();
-        return true;
+            mView.invalidate();
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -194,11 +253,9 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
         mImage.onScaleEnd();
     }
 
-    @Override
-    public void onLayoutChange(View v, int left, int top, int right, int bottom,
-                               int oldLeft, int oldTop, int oldRight, int oldBottom) {
-        mImage.onWindowChanged(v.getScrollX() + v.getPivotX(),
-                v.getScrollY() + v.getPivotY(), v.getWidth(), v.getHeight());
+    public void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        mImage.onWindowChanged(mView.getScrollX() + mView.getPivotX(),
+                mView.getScrollY() + mView.getPivotY(), mView.getWidth(), mView.getHeight());
     }
 
     @Override

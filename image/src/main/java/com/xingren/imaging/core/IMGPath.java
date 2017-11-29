@@ -16,17 +16,13 @@ public class IMGPath {
 
     private int color = Color.RED;
 
-    private Matrix matrix = new Matrix();
-
     private IMGMode mode = IMGMode.DOODLE;
 
     private static final Paint P = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-    private static final float SW_BASE = 3f;
-
     static {
         P.setStyle(Paint.Style.STROKE);
-        P.setStrokeWidth(SW_BASE);
+        P.setStrokeWidth(20f);
     }
 
     public IMGPath(Path path, IMGMode mode, int color) {
@@ -35,33 +31,32 @@ public class IMGPath {
         this.color = color;
     }
 
+    public IMGPath(Path path, IMGMode mode) {
+        this.path = path;
+        this.mode = mode;
+    }
+
     public void onDraw(Canvas canvas) {
         if (mode == IMGMode.DOODLE) {
             onDrawDoodle(canvas);
         } else if (mode == IMGMode.MOSAIC) {
-
+            onDrawMosaic(canvas);
         }
     }
 
     private void onDrawDoodle(Canvas canvas) {
         P.setColor(color);
         // rewind
-        //
-        canvas.save();
-        canvas.concat(matrix);
         canvas.drawPath(path, P);
-        canvas.restore();
+    }
+
+    private void onDrawMosaic(Canvas canvas) {
+        P.setColor(Color.BLACK);
+        path.setFillType(Path.FillType.EVEN_ODD);
+        canvas.drawPath(path, P);
     }
 
     public void transform(Matrix matrix) {
-        this.matrix.postConcat(matrix);
-    }
-
-    public static void setStrokeWidth(float width) {
-        P.setStrokeWidth(width);
-    }
-
-    public static void setStrokeWidthScale(float scale) {
-        setStrokeWidth(SW_BASE * scale);
+        path.transform(matrix);
     }
 }

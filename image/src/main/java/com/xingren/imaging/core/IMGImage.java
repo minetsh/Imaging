@@ -6,6 +6,8 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 
 import com.xingren.imaging.core.clip.IMGClip;
@@ -24,7 +26,7 @@ public class IMGImage {
 
     private static final String TAG = "IMGImage";
 
-    private Bitmap mImage;
+    private Bitmap mImage, mMosaicImage;
 
     /**
      * 完整图片边框
@@ -46,7 +48,7 @@ public class IMGImage {
     /**
      * 编辑模式
      */
-    private IMGMode mMode = IMGMode.DOODLE;
+    private IMGMode mMode = IMGMode.MOSAIC;
 
     private float mWindowPivotX, mWindowPivotY;
 
@@ -100,11 +102,26 @@ public class IMGImage {
 
     public void setBitmap(Bitmap bitmap) {
         this.mImage = bitmap;
+        mMosaicImage = null;
+        onMosaicBitmap();
         onImageChanged();
     }
 
     public IMGMode getMode() {
         return mMode;
+    }
+
+    public void setMode(IMGMode mode) {
+        this.mMode = mode;
+        onMosaicBitmap();
+    }
+
+    private void onMosaicBitmap() {
+        if (mMosaicImage != null || mImage == null) return;
+
+        if (mMode == IMGMode.MOSAIC) {
+            mMosaicImage = Bitmap.createScaledBitmap(mImage, mImage.getWidth() / 30, mImage.getHeight() / 30, true);
+        }
     }
 
     public void onImageChanged() {
@@ -156,9 +173,26 @@ public class IMGImage {
         }
     }
 
-    public void addDoodle(IMGPath doodle) {
+    public void addDoodle(IMGPath doodle, float sx, float sy) {
         if (doodle != null) {
+
+            float scale = 1f / getScale();
+            M.setTranslate(sx - mClipFrame.left, sy - mClipFrame.top);
+            M.postScale(scale, scale);
+            doodle.transform(M);
+
             mDoodles.add(doodle);
+        }
+    }
+
+    public void addMosaic(IMGPath mosaic, float sx, float sy) {
+        if (mosaic != null) {
+            float scale = 1f / getScale();
+            M.setTranslate(sx - mClipFrame.left, sy - mClipFrame.top);
+            M.postScale(scale, scale);
+            mosaic.transform(M);
+
+            mMosaics.add(mosaic);
         }
     }
 
@@ -261,7 +295,10 @@ public class IMGImage {
 
     public void onDrawImage(Canvas canvas) {
 //        canvas.clipRect(mClipFrame);
-        canvas.drawBitmap(mImage, null, mFrame, null);
+
+        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+        canvas.drawBitmap(mImage, null, mClipFrame, null);
 
         if (DEBUG) {
             canvas.drawText(String.format(Locale.CHINA, "[%.1f, %.1f]",
@@ -272,22 +309,45 @@ public class IMGImage {
 
     }
 
-    public void onDrawDoodles(Canvas canvas) {
-        if (!mDoodles.isEmpty()) {
-            canvas.save();
-            for (IMGPath path : mDoodles) {
-                path.onDraw(canvas);
-            }
-            canvas.restore();
-        }
-    }
-
     public void onDrawMosaics(Canvas canvas) {
         if (!mMosaics.isEmpty()) {
+
+            int sc = canvas.saveLayer(mClipFrame.left, mClipFrame.top, mClipFrame.right, mClipFrame.bottom, null, Canvas.ALL_SAVE_FLAG);
+
             canvas.save();
+            float scale = getScale();
+            canvas.translate(mClipFrame.left, mClipFrame.top);
+            canvas.scale(scale, scale);
+
             for (IMGPath path : mMosaics) {
                 path.onDraw(canvas);
             }
+
+            canvas.restore();
+
+            Paint p = new Paint();
+
+            p.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+
+            canvas.drawBitmap(mMosaicImage, null, mClipFrame, p);
+
+            canvas.restoreToCount(sc);
+        }
+    }
+
+    public void onDrawDoodles(Canvas canvas) {
+        if (!mDoodles.isEmpty()) {
+
+            canvas.save();
+
+            float scale = getScale();
+            canvas.translate(mClipFrame.left, mClipFrame.top);
+            canvas.scale(scale, scale);
+
+            for (IMGPath path : mDoodles) {
+                path.onDraw(canvas);
+            }
+
             canvas.restore();
         }
     }
@@ -343,10 +403,6 @@ public class IMGImage {
         M.mapRect(mFrame);
         M.mapRect(mClipFrame);
 
-        for (IMGPath doodle : mDoodles) {
-            doodle.transform(M);
-        }
-
         for (IMGSticker sticker : mBackStickers) {
             M.mapRect(sticker.getFrame());
             float tPivotX = sticker.getX() + sticker.getPivotX();
@@ -356,8 +412,6 @@ public class IMGImage {
             sticker.setX(sticker.getX() + sticker.getFrame().centerX() - tPivotX);
             sticker.setY(sticker.getY() + sticker.getFrame().centerY() - tPivotY);
         }
-
-        IMGPath.setStrokeWidthScale(getScale());
     }
 
     public void onScaleEnd() {
