@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -64,6 +63,14 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
     void setImageBitmap(Bitmap image) {
         mImage.setBitmap(image);
         mView.invalidate();
+    }
+
+    void setMode(IMGMode mode) {
+        mImage.setMode(mode);
+    }
+
+    IMGMode getMode() {
+        return mImage.getMode();
     }
 
     IMGImage getImage() {

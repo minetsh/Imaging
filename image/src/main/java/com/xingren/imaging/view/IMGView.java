@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import com.xingren.imaging.R;
+import com.xingren.imaging.core.IMGMode;
 import com.xingren.imaging.core.clip.IMGClipView;
 import com.xingren.imaging.core.sticker.IMGSticker;
 
@@ -25,6 +26,8 @@ public class IMGView extends FrameLayout {
     private IMGDelegate mDelegate;
 
     private IMGClipView mClipView;
+
+    private IMGMode mPreMode = IMGMode.NONE;
 
     public IMGView(Context context) {
         this(context, null, 0);
@@ -49,6 +52,30 @@ public class IMGView extends FrameLayout {
 
     public void setImageBitmap(Bitmap image) {
         mDelegate.setImageBitmap(image);
+    }
+
+    public void setMode(IMGMode mode) {
+        mDelegate.setMode(mode);
+    }
+
+    public void doRotate() {
+        // TODO
+    }
+
+    public void resetClip() {
+        // TODO
+    }
+
+    public void doClip() {
+        // TODO
+    }
+
+    public void cancelClip() {
+        // TODO
+    }
+
+    public IMGMode getMode() {
+        return mDelegate.getMode();
     }
 
     @Override
