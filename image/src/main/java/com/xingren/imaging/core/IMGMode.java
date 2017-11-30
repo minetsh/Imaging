@@ -9,6 +9,6 @@ public enum IMGMode {
     NONE,
     DOODLE,
     MOSAIC,
-    CROP
+    CLIP
 
 }

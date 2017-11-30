@@ -1,3 +1,10 @@
 <resources>
-    <string name="app_name">imaging</string>
+    <string name="image_doodle">涂鸦</string>
+    <string name="image_text">文字</string>
+    <string name="image_mosaic">马赛克</string>
+    <string name="image_clip">裁剪</string>
+    <string name="image_reset">还原</string>
+    <string name="image_done">完成</string>
+    <string name="image_cancel">取消</string>
+    <string name="image_rotate">旋转</string>
 </resources>

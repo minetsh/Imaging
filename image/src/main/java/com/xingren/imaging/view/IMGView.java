@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import com.xingren.imaging.R;
+import com.xingren.imaging.core.clip.IMGClipView;
 import com.xingren.imaging.core.sticker.IMGSticker;
 
 /**
@@ -22,6 +23,8 @@ public class IMGView extends FrameLayout {
     private static final String TAG = "IMGView";
 
     private IMGDelegate mDelegate;
+
+    private IMGClipView mClipView;
 
     public IMGView(Context context) {
         this(context, null, 0);
@@ -37,10 +40,9 @@ public class IMGView extends FrameLayout {
     }
 
     private void initialize(Context context) {
+
         mDelegate = new IMGDelegate(this);
         BitmapFactory.Options options = new BitmapFactory.Options();
-
-
 
         mDelegate.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.am, options));
     }

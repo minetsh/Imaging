@@ -11,12 +11,12 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 
 import com.xingren.imaging.core.clip.IMGClip;
+import com.xingren.imaging.core.clip.IMGClipWindow;
 import com.xingren.imaging.core.homing.IMGHoming;
 import com.xingren.imaging.core.sticker.IMGSticker;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Created by felix on 2017/11/21 下午10:03.
@@ -26,6 +26,7 @@ public class IMGImage {
 
     private static final String TAG = "IMGImage";
 
+    // TODO image is null
     private Bitmap mImage, mMosaicImage;
 
     /**
@@ -45,10 +46,14 @@ public class IMGImage {
 
     private IMGClip mClip;
 
+    private IMGClip.Anchor mAnchor;
+
+    private IMGClipWindow mClipWin = new IMGClipWindow();
+
     /**
      * 编辑模式
      */
-    private IMGMode mMode = IMGMode.MOSAIC;
+    private IMGMode mMode = IMGMode.CLIP;
 
     private float mWindowPivotX, mWindowPivotY;
 
@@ -57,7 +62,7 @@ public class IMGImage {
     /**
      * 是否初始位置
      */
-    private boolean isInitial = false;
+    private boolean isInitialHoming = false;
 
     /**
      * 当前选中贴片
@@ -101,9 +106,17 @@ public class IMGImage {
     }
 
     public void setBitmap(Bitmap bitmap) {
+        if (bitmap == null || bitmap.isRecycled()) {
+            return;
+        }
+
         this.mImage = bitmap;
-        mMosaicImage = null;
-        onMosaicBitmap();
+
+        // 清空马赛克图层
+        this.mMosaicImage = null;
+
+        makeMosaicBitmap();
+
         onImageChanged();
     }
 
@@ -113,20 +126,34 @@ public class IMGImage {
 
     public void setMode(IMGMode mode) {
         this.mMode = mode;
-        onMosaicBitmap();
-    }
-
-    private void onMosaicBitmap() {
-        if (mMosaicImage != null || mImage == null) return;
 
         if (mMode == IMGMode.MOSAIC) {
-            mMosaicImage = Bitmap.createScaledBitmap(mImage, mImage.getWidth() / 30, mImage.getHeight() / 30, true);
+            makeMosaicBitmap();
+        } else if (mMode == IMGMode.CLIP && mImage != null) {
+            mClipWin.setImageSize(mImage.getWidth(), mImage.getHeight());
         }
     }
 
-    public void onImageChanged() {
-        isInitial = false;
+    private void makeMosaicBitmap() {
+        if (mMosaicImage != null || mImage == null) {
+            return;
+        }
+
+        if (mMode == IMGMode.MOSAIC) {
+
+            // TODO
+            mMosaicImage = Bitmap.createScaledBitmap(mImage,
+                    mImage.getWidth() / 30, mImage.getHeight() / 30, true);
+        }
+    }
+
+    private void onImageChanged() {
+        isInitialHoming = false;
         onWindowChanged(mWindowPivotX, mWindowPivotY, mWindowWidth, mWindowHeight);
+
+        if (mImage != null && mMode == IMGMode.CLIP) {
+            mClipWin.setImageSize(mImage.getWidth(), mImage.getHeight());
+        }
     }
 
     public RectF getFrame() {
@@ -134,33 +161,68 @@ public class IMGImage {
     }
 
     public IMGHoming getStartHoming(float scrollX, float scrollY) {
-        IMGHoming homing = new IMGHoming();
-        homing.x = scrollX;
-        homing.y = scrollY;
-        homing.scale = getScale();
-        return homing;
+        return new IMGHoming(scrollX, scrollY, getScale());
     }
 
     public IMGHoming getEndHoming(float scrollX, float scrollY) {
         IMGHoming homing = new IMGHoming(scrollX, scrollY, getScale());
-        if (!mClipFrame.contains(scrollX, scrollY,
-                scrollX + mWindowWidth, scrollY + mWindowHeight)) {
+        if (mMode == IMGMode.CLIP) {
+            RectF frame = new RectF(mClipWin.getFrame());
+            frame.offset(scrollX, scrollY);
 
-            if (mClipFrame.width() < mWindowWidth) {
-                homing.scale *= mWindowWidth / mClipFrame.width();
-                homing.x = mClipFrame.centerX() - mWindowWidth / 2;
-            } else if (mClipFrame.left > scrollX) {
-                homing.x = mClipFrame.left;
-            } else if (mClipFrame.right < scrollX + mWindowWidth) {
-                homing.x = mClipFrame.right - mWindowWidth;
+            if (!mClipFrame.contains(frame)) {
+                // TODO
+                RectF clipFrame = new RectF();
+
+                float scale = 1f;
+
+                if (mClipFrame.width() < frame.width()) {
+                    scale = Math.max(scale, frame.width() / mClipFrame.width());
+                }
+
+                if (mClipFrame.height() < frame.height()) {
+                    scale = Math.max(scale, frame.height() / mClipFrame.height());
+                }
+
+                M.setScale(scale, scale, mClipFrame.centerX(), mClipFrame.centerY());
+                M.mapRect(clipFrame, mClipFrame);
+
+                homing.scale *= scale;
+
+                if (clipFrame.left > frame.left) {
+                    homing.x += clipFrame.left - frame.left;
+                } else if (clipFrame.right < frame.right) {
+                    homing.x += clipFrame.right - frame.right;
+                }
+
+                if (clipFrame.top > frame.top) {
+                    homing.y += clipFrame.top - frame.top;
+                } else if (clipFrame.bottom < frame.bottom) {
+                    homing.y += clipFrame.bottom - frame.bottom;
+                }
             }
 
-            if (mClipFrame.height() < mWindowHeight) {
-                homing.y = mClipFrame.centerY() - mWindowHeight / 2;
-            } else if (mClipFrame.top > scrollY) {
-                homing.y = mClipFrame.top;
-            } else if (mClipFrame.bottom < scrollY + mWindowHeight) {
-                homing.y = mClipFrame.bottom - mWindowHeight;
+        } else {
+
+            // TODO
+            if (!mClipFrame.contains(scrollX, scrollY, scrollX + mWindowWidth, scrollY + mWindowHeight)) {
+
+                if (mClipFrame.width() < mWindowWidth) {
+                    homing.scale *= mWindowWidth / mClipFrame.width();
+                    homing.x = mClipFrame.centerX() - mWindowWidth / 2;
+                } else if (mClipFrame.left > scrollX) {
+                    homing.x = mClipFrame.left;
+                } else if (mClipFrame.right < scrollX + mWindowWidth) {
+                    homing.x = mClipFrame.right - mWindowWidth;
+                }
+
+                if (mClipFrame.height() < mWindowHeight) {
+                    homing.y = mClipFrame.centerY() - mWindowHeight / 2;
+                } else if (mClipFrame.top > scrollY) {
+                    homing.y = mClipFrame.top;
+                } else if (mClipFrame.bottom < scrollY + mWindowHeight) {
+                    homing.y = mClipFrame.bottom - mWindowHeight;
+                }
             }
         }
 
@@ -250,35 +312,12 @@ public class IMGImage {
         mWindowWidth = width;
         mWindowHeight = height;
 
-        if (!isInitial && mImage != null) {
+        if (width == 0 || height == 0) {
+            return;
+        }
 
-            if (width == 0 || height == 0) {
-                // Window not ready.
-                return;
-            }
-
-            mHomeFrame.set(0, 0, width, height);
-            mFrame.set(0, 0, mImage.getWidth(), mImage.getHeight());
-            mClipFrame.set(0, 0, mImage.getWidth(), mImage.getHeight());
-
-            if (mFrame.width() == 0 || mFrame.height() == 0) {
-                // Bitmap invalidate.
-                return;
-            }
-
-            float scale = Math.min(
-                    width / mFrame.width(),
-                    height / mFrame.height()
-            );
-
-            // Scale to fit window.
-            M.reset();
-            M.setScale(scale, scale, mFrame.centerX(), mFrame.centerY());
-            M.postTranslate(mWindowPivotX - mFrame.centerX(), mWindowPivotY - mFrame.centerY());
-            M.mapRect(mFrame);
-            M.mapRect(mClipFrame);
-
-            isInitial = true;
+        if (!isInitialHoming && mImage != null) {
+            onInitialHoming(pivotX, pivotY, width, height);
         } else {
 
             // Pivot to fit window.
@@ -286,6 +325,42 @@ public class IMGImage {
             M.setTranslate(mWindowPivotX - mClipFrame.centerX(), mWindowPivotY - mClipFrame.centerY());
             M.mapRect(mFrame);
             M.mapRect(mClipFrame);
+        }
+
+        mClipWin.setClipWinSize(width, height);
+    }
+
+    private void onInitialHoming(float pivotX, float pivotY, int width, int height) {
+
+        mHomeFrame.set(0, 0, width, height);
+        mFrame.set(0, 0, mImage.getWidth(), mImage.getHeight());
+        mClipFrame.set(0, 0, mImage.getWidth(), mImage.getHeight());
+        mClipWin.setClipWinSize(width, height);
+
+        if (mFrame.width() == 0 || mFrame.height() == 0) {
+            // Bitmap invalidate.
+            return;
+        }
+
+        float scale = Math.min(
+                width / mFrame.width(),
+                height / mFrame.height()
+        );
+
+        // Scale to fit window.
+        M.reset();
+        M.setScale(scale, scale, mFrame.centerX(), mFrame.centerY());
+        M.postTranslate(mWindowPivotX - mFrame.centerX(), mWindowPivotY - mFrame.centerY());
+        M.mapRect(mFrame);
+        M.mapRect(mClipFrame);
+
+        isInitialHoming = true;
+        onInitialHomingDone();
+    }
+
+    private void onInitialHomingDone() {
+        if (mMode == IMGMode.CLIP && mImage != null) {
+            mClipWin.setImageSize(mImage.getWidth(), mImage.getHeight());
         }
     }
 
@@ -300,12 +375,6 @@ public class IMGImage {
 
         canvas.drawBitmap(mImage, null, mClipFrame, null);
 
-        if (DEBUG) {
-            canvas.drawText(String.format(Locale.CHINA, "[%.1f, %.1f]",
-                    mClipFrame.left, mClipFrame.top), mClipFrame.left, mClipFrame.top, P);
-        }
-
-//        canvas.drawRect(mHomeFrame, P);
 
     }
 
@@ -369,12 +438,43 @@ public class IMGImage {
         }
     }
 
-    public void onTouch() {
+    public void onDrawClipWindow(Canvas canvas) {
+        if (mMode == IMGMode.CLIP) {
+            mClipWin.onDraw(canvas);
+        }
+    }
+
+    public void onTouchDown(float x, float y) {
         moveToBackground(mForeSticker);
+        if (mMode == IMGMode.CLIP) {
+            mAnchor = mClipWin.getAnchor(x, y);
+        }
+    }
+
+    public void onTouchDown() {
+        moveToBackground(mForeSticker);
+        if (mMode == IMGMode.CLIP) {
+//            mAnchor
+        }
+    }
+
+    public void onTouchUp() {
+        mAnchor = null;
+
     }
 
     public void onScaleBegin() {
-        onTouch();
+        onTouchDown();
+    }
+
+    public boolean onScroll(float dx, float dy) {
+        if (mMode == IMGMode.CLIP) {
+            if (mAnchor != null) {
+                mClipWin.onScroll(mAnchor, dx, dy);
+                return true;
+            }
+        }
+        return false;
     }
 
     public float getScale() {

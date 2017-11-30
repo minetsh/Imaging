@@ -9,4 +9,25 @@
         android:layout_height="match_parent"
         android:background="#000" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="bottom"
+        android:orientation="vertical"
+        android:weightSum="100">
+
+        <ViewSwitcher
+            android:id="@+id/vs_edit_op"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="20">
+
+            <include layout="@layout/image_edit_opt_layout" />
+
+            <include layout="@layout/image_edit_clip_layout" />
+
+        </ViewSwitcher>
+
+    </LinearLayout>
+
 </FrameLayout>

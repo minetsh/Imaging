@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -63,8 +64,6 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
     void setImageBitmap(Bitmap image) {
         mImage.setBitmap(image);
         mView.invalidate();
-
-
     }
 
     IMGImage getImage() {
@@ -83,6 +82,7 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
     }
 
     boolean onTouch(MotionEvent event) {
+
         if (isHoming()) {
             // Homing
             return false;
@@ -94,7 +94,7 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
         IMGMode mode = mImage.getMode();
 
-        if (mode == IMGMode.NONE || mode == IMGMode.CROP) {
+        if (mode == IMGMode.NONE || mode == IMGMode.CLIP) {
             handled |= onTouchNONE(event);
         } else if (mPointerCount > 1) {
             onPathDone();
@@ -134,6 +134,13 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
         canvas.restore();
 
         mImage.onDrawStickers(canvas);
+
+        if (mImage.getMode() == IMGMode.CLIP) {
+            canvas.save();
+            canvas.translate(mView.getScrollX(), mView.getScrollY());
+            mImage.onDrawClipWindow(canvas);
+            canvas.restore();
+        }
     }
 
     private void onDrawPath(Canvas canvas) {
@@ -148,14 +155,13 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
                 onHoming();
                 break;
         }
-
         return mGDetector.onTouchEvent(event);
     }
 
     private boolean onTouchPath(MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                mImage.onTouch();
+                mImage.onTouchDown();
                 return onPathBegin(event);
             case MotionEvent.ACTION_MOVE:
                 return onPathMove(event);
@@ -217,8 +223,12 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
         mHomingAnimator.start();
     }
 
-    private boolean onScrollBy(float dx, float dy) {
-        mView.scrollBy(Math.round(dx), Math.round(dy));
+    private boolean onScroll(float dx, float dy) {
+        if (!mImage.onScroll(-dx, -dy)) {
+            mView.scrollBy(Math.round(dx), Math.round(dy));
+        } else {
+            mView.invalidate();
+        }
         return true;
     }
 
@@ -269,13 +279,13 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
         @Override
         public boolean onDown(MotionEvent e) {
-            mImage.onTouch();
+            mImage.onTouchDown(e.getX(), e.getY());
             return true;
         }
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            return onScrollBy(distanceX, distanceY);
+            return IMGDelegate.this.onScroll(distanceX, distanceY);
         }
 
         @Override
