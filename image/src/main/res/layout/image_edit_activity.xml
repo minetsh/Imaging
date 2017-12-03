@@ -16,6 +16,38 @@
         android:orientation="vertical"
         android:weightSum="100">
 
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="80"
+            android:padding="12dp">
+
+            <TextView
+                android:id="@+id/tv_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"
+                android:layout_marginTop="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:text="@string/image_cancel"
+                android:textColor="@color/image_color_primary"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tv_done"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:text="@string/image_done"
+                android:textColor="@color/image_color_accent"
+                android:textSize="16sp" />
+
+        </FrameLayout>
+
         <ViewSwitcher
             android:id="@+id/vs_edit_op"
             android:layout_width="match_parent"

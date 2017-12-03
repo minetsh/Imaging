@@ -27,7 +27,7 @@
             android:layout_gravity="center_vertical"
             android:background="@null"
             android:contentDescription="@string/image_cancel"
-            android:src="@drawable/ic_adjust" />
+            android:src="@drawable/image_btn_cancel" />
 
         <TextView
             android:id="@+id/tv_reset"
@@ -37,7 +37,7 @@
             android:clickable="true"
             android:focusable="true"
             android:text="@string/image_reset"
-            android:textColor="#FFf"
+            android:textColor="@color/image_color_text"
             android:textSize="16sp" />
 
         <ImageButton
@@ -47,7 +47,7 @@
             android:layout_gravity="center_vertical|end"
             android:background="@null"
             android:contentDescription="@string/image_done"
-            android:src="@drawable/ic_adjust" />
+            android:src="@drawable/image_btn_ok" />
 
     </FrameLayout>
 

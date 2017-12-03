@@ -5,7 +5,10 @@
 
         <activity android:name=".ImageGalleryActivity" />
 
-        <activity android:name=".ImageEditActivity" />
+        <activity
+            android:name=".ImageEditActivity"
+            android:theme="@style/ImageEditTheme"
+            android:windowSoftInputMode="stateAlwaysHidden" />
 
     </application>
 

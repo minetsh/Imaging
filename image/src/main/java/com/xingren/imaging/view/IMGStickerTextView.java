@@ -14,9 +14,11 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.xingren.imaging.ImageTextDialog;
 import com.xingren.imaging.R;
-import com.xingren.imaging.core.sticker.IMGStickerAdjustHelper;
+import com.xingren.imaging.core.IMGText;
 import com.xingren.imaging.core.sticker.IMGSticker;
+import com.xingren.imaging.core.sticker.IMGStickerAdjustHelper;
 import com.xingren.imaging.core.sticker.IMGStickerHelper;
 import com.xingren.imaging.core.sticker.IMGStickerMoveHelper;
 
@@ -24,7 +26,8 @@ import com.xingren.imaging.core.sticker.IMGStickerMoveHelper;
  * Created by felix on 2017/11/14 下午7:27.
  */
 
-public class IMGStickerTextView extends FrameLayout implements IMGSticker, View.OnClickListener {
+public class IMGStickerTextView extends FrameLayout implements IMGSticker,
+        View.OnClickListener, ImageTextDialog.Callback {
 
     private static final String TAG = "IMGStickerTextView";
 
@@ -33,6 +36,10 @@ public class IMGStickerTextView extends FrameLayout implements IMGSticker, View.
     private ImageView mDeleteView, mAdjustView;
 
     private Rect mBorderRect;
+
+    private IMGText mText;
+
+    private ImageTextDialog mDialog;
 
     private IMGStickerHelper<IMGStickerTextView> mStickerHelper;
 
@@ -82,8 +89,8 @@ public class IMGStickerTextView extends FrameLayout implements IMGSticker, View.
         layoutParams.gravity = Gravity.CENTER;
         mTextView.setLayoutParams(layoutParams);
         mTextView.setPadding(PADDING, PADDING, PADDING, PADDING);
-        mTextView.setText("啊哈哈哈");
         mTextView.setTextColor(Color.WHITE);
+        mTextView.setOnClickListener(this);
         addView(mTextView);
 
         mAdjustView = new ImageView(context);
@@ -119,6 +126,18 @@ public class IMGStickerTextView extends FrameLayout implements IMGSticker, View.
             canvas.drawRect(mBorderRect, PAINT);
             canvas.restore();
         }
+    }
+
+    public void setText(IMGText text) {
+        mText = text;
+        if (mText != null && mTextView != null) {
+            mTextView.setText(mText.getText());
+            mTextView.setTextColor(mText.getColor());
+        }
+    }
+
+    public IMGText getText() {
+        return mText;
     }
 
     @Override
@@ -165,7 +184,15 @@ public class IMGStickerTextView extends FrameLayout implements IMGSticker, View.
     public void onClick(View v) {
         if (v == mDeleteView) {
             mStickerHelper.remove();
+        } else if (v == mTextView) {
+            onTextClick();
         }
+    }
+
+    private void onTextClick() {
+        ImageTextDialog dialog = getDialog();
+        dialog.setText(mText);
+        dialog.show();
     }
 
     @Override
@@ -180,5 +207,21 @@ public class IMGStickerTextView extends FrameLayout implements IMGSticker, View.
             return true;
         }
         return super.onInterceptTouchEvent(ev);
+    }
+
+    private ImageTextDialog getDialog() {
+        if (mDialog == null) {
+            mDialog = new ImageTextDialog(getContext(), this);
+        }
+        return mDialog;
+    }
+
+    @Override
+    public void onText(IMGText text) {
+        mText = text;
+        if (mText != null && mTextView != null) {
+            mTextView.setText(mText.getText());
+            mTextView.setTextColor(mText.getColor());
+        }
     }
 }

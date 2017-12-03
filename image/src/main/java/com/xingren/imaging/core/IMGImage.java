@@ -53,7 +53,7 @@ public class IMGImage {
     /**
      * 编辑模式
      */
-    private IMGMode mMode = IMGMode.CLIP;
+    private IMGMode mMode = IMGMode.NONE;
 
     private float mWindowPivotX, mWindowPivotY;
 

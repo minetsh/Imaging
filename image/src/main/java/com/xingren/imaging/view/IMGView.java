@@ -12,6 +12,7 @@ import android.widget.FrameLayout;
 
 import com.xingren.imaging.R;
 import com.xingren.imaging.core.IMGMode;
+import com.xingren.imaging.core.IMGText;
 import com.xingren.imaging.core.clip.IMGClipView;
 import com.xingren.imaging.core.sticker.IMGSticker;
 
@@ -99,6 +100,12 @@ public class IMGView extends FrameLayout {
             addView(stickerView, layoutParams);
             mDelegate.onAddStickerView(stickerView);
         }
+    }
+
+    public void addStickerText(IMGText text) {
+        IMGStickerTextView textView = new IMGStickerTextView(getContext());
+        textView.setText(text);
+        addStickerView(textView);
     }
 
     @Override

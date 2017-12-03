@@ -2,6 +2,7 @@ package com.xingren.imaging.core;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.CornerPathEffect;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -23,17 +24,26 @@ public class IMGPath {
     static {
         P.setStyle(Paint.Style.STROKE);
         P.setStrokeWidth(20f);
+        P.setPathEffect(new CornerPathEffect(20));
+        P.setStrokeCap(Paint.Cap.ROUND);
+        P.setStrokeJoin(Paint.Join.ROUND);
     }
 
     public IMGPath(Path path, IMGMode mode, int color) {
         this.path = path;
         this.mode = mode;
         this.color = color;
+        if (mode == IMGMode.MOSAIC) {
+            path.setFillType(Path.FillType.EVEN_ODD);
+        }
     }
 
     public IMGPath(Path path, IMGMode mode) {
         this.path = path;
         this.mode = mode;
+        if (mode == IMGMode.MOSAIC) {
+            path.setFillType(Path.FillType.EVEN_ODD);
+        }
     }
 
     public void onDraw(Canvas canvas) {
@@ -52,7 +62,6 @@ public class IMGPath {
 
     private void onDrawMosaic(Canvas canvas) {
         P.setColor(Color.BLACK);
-        path.setFillType(Path.FillType.EVEN_ODD);
         canvas.drawPath(path, P);
     }
 
