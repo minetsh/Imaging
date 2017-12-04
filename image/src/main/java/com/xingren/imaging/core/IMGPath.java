@@ -2,7 +2,6 @@ package com.xingren.imaging.core;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.CornerPathEffect;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -19,14 +18,20 @@ public class IMGPath {
 
     private IMGMode mode = IMGMode.DOODLE;
 
-    private static final Paint P = new Paint(Paint.ANTI_ALIAS_FLAG);
+    public static final float BASE_DOODLE_WIDTH = 20f;
 
-    static {
-        P.setStyle(Paint.Style.STROKE);
-        P.setStrokeWidth(20f);
-        P.setPathEffect(new CornerPathEffect(20));
-        P.setStrokeCap(Paint.Cap.ROUND);
-        P.setStrokeJoin(Paint.Join.ROUND);
+    public static final float BASE_MOSAIC_WIDTH = 40f;
+
+    public IMGPath() {
+        this(new Path());
+    }
+
+    public IMGPath(Path path) {
+        this(path, IMGMode.DOODLE);
+    }
+
+    public IMGPath(Path path, IMGMode mode) {
+        this(path, mode, Color.RED);
     }
 
     public IMGPath(Path path, IMGMode mode, int color) {
@@ -38,31 +43,28 @@ public class IMGPath {
         }
     }
 
-    public IMGPath(Path path, IMGMode mode) {
-        this.path = path;
+    public IMGMode getMode() {
+        return mode;
+    }
+
+    public void setMode(IMGMode mode) {
         this.mode = mode;
-        if (mode == IMGMode.MOSAIC) {
-            path.setFillType(Path.FillType.EVEN_ODD);
-        }
     }
 
-    public void onDraw(Canvas canvas) {
+    public void onDrawDoodle(Canvas canvas, Paint paint) {
         if (mode == IMGMode.DOODLE) {
-            onDrawDoodle(canvas);
-        } else if (mode == IMGMode.MOSAIC) {
-            onDrawMosaic(canvas);
+            paint.setColor(color);
+            paint.setStrokeWidth(BASE_DOODLE_WIDTH);
+            // rewind
+            canvas.drawPath(path, paint);
         }
     }
 
-    private void onDrawDoodle(Canvas canvas) {
-        P.setColor(color);
-        // rewind
-        canvas.drawPath(path, P);
-    }
-
-    private void onDrawMosaic(Canvas canvas) {
-        P.setColor(Color.BLACK);
-        canvas.drawPath(path, P);
+    public void onDrawMosaic(Canvas canvas, Paint paint) {
+        if (mode == IMGMode.MOSAIC) {
+            paint.setStrokeWidth(BASE_MOSAIC_WIDTH);
+            canvas.drawPath(path, paint);
+        }
     }
 
     public void transform(Matrix matrix) {

@@ -18,8 +18,8 @@
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="80"
+            android:layout_height="wrap_content"
+            android:background="@drawable/image_bg_top"
             android:padding="12dp">
 
             <TextView
@@ -30,6 +30,7 @@
                 android:layout_marginTop="8dp"
                 android:clickable="true"
                 android:focusable="true"
+                android:onClick="onClick"
                 android:text="@string/image_cancel"
                 android:textColor="@color/image_color_primary"
                 android:textSize="16sp" />
@@ -42,17 +43,24 @@
                 android:layout_marginTop="8dp"
                 android:clickable="true"
                 android:focusable="true"
+                android:onClick="onClick"
                 android:text="@string/image_done"
                 android:textColor="@color/image_color_accent"
                 android:textSize="16sp" />
 
         </FrameLayout>
 
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="80" />
+
         <ViewSwitcher
             android:id="@+id/vs_edit_op"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="20">
+            android:layout_weight="20"
+            android:background="@drawable/image_bg_bottom">
 
             <include layout="@layout/image_edit_opt_layout" />
 

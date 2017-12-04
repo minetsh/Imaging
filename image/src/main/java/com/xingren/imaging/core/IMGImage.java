@@ -3,6 +3,7 @@ package com.xingren.imaging.core;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.CornerPathEffect;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PointF;
@@ -44,10 +45,14 @@ public class IMGImage {
      */
     private RectF mHomeFrame = new RectF();
 
-    private IMGClip mClip;
-
+    /**
+     * 裁剪模式时当前触摸锚点
+     */
     private IMGClip.Anchor mAnchor;
 
+    /**
+     * 裁剪窗口
+     */
     private IMGClipWindow mClipWin = new IMGClipWindow();
 
     /**
@@ -88,17 +93,21 @@ public class IMGImage {
 
     private static final int MAX_SIZE = 10000;
 
-    private static final Matrix M = new Matrix();
+    private Paint mDoodlePaint, mMosaicPaint, mPaint;
 
-    private static final Paint P = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private Matrix M = new Matrix();
 
     private static final boolean DEBUG = true;
 
-    static {
-        P.setColor(Color.RED);
-        P.setStrokeWidth(2);
-        P.setTextSize(36);
-        P.setStyle(Paint.Style.STROKE);
+    {
+        // Doodle&Mosaic 's paint
+        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStrokeWidth(IMGPath.BASE_DOODLE_WIDTH);
+        mPaint.setColor(Color.RED);
+        mPaint.setPathEffect(new CornerPathEffect(IMGPath.BASE_DOODLE_WIDTH));
+        mPaint.setStrokeCap(Paint.Cap.ROUND);
+        mPaint.setStrokeJoin(Paint.Join.ROUND);
     }
 
     public IMGImage() {
@@ -113,6 +122,9 @@ public class IMGImage {
         this.mImage = bitmap;
 
         // 清空马赛克图层
+        if (mMosaicImage != null) {
+            mMosaicImage.recycle();
+        }
         this.mMosaicImage = null;
 
         makeMosaicBitmap();
@@ -134,6 +146,30 @@ public class IMGImage {
         }
     }
 
+    public boolean isMosaicEmpty() {
+        return mMosaics.isEmpty();
+    }
+
+    public boolean isDoodleEmpty() {
+        return mDoodles.isEmpty();
+    }
+
+    public void undoDoodle() {
+        if (!mDoodles.isEmpty()) {
+            mDoodles.remove(mDoodles.size() - 1);
+        }
+    }
+
+    public void undoMosaic() {
+        if (!mMosaics.isEmpty()) {
+            mMosaics.remove(mMosaics.size() - 1);
+        }
+    }
+
+    public RectF getClipFrame() {
+        return mClipFrame;
+    }
+
     private void makeMosaicBitmap() {
         if (mMosaicImage != null || mImage == null) {
             return;
@@ -141,9 +177,20 @@ public class IMGImage {
 
         if (mMode == IMGMode.MOSAIC) {
 
-            // TODO
-            mMosaicImage = Bitmap.createScaledBitmap(mImage,
-                    mImage.getWidth() / 30, mImage.getHeight() / 30, true);
+            int w = Math.round(mImage.getWidth() / 64f);
+            int h = Math.round(mImage.getHeight() / 64f);
+
+            w = Math.max(w, 8);
+            h = Math.max(h, 8);
+
+            // 马赛克画刷
+            if (mMosaicPaint == null) {
+                mMosaicPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                mMosaicPaint.setFilterBitmap(false);
+                mMosaicPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+            }
+
+            mMosaicImage = Bitmap.createScaledBitmap(mImage, w, h, false);
         }
     }
 
@@ -371,52 +418,45 @@ public class IMGImage {
     public void onDrawImage(Canvas canvas) {
 //        canvas.clipRect(mClipFrame);
 
+        // TODO
         Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-        canvas.drawBitmap(mImage, null, mClipFrame, null);
-
-
+        canvas.drawBitmap(mImage, null, mClipFrame, p);
     }
 
-    public void onDrawMosaics(Canvas canvas) {
-        if (!mMosaics.isEmpty()) {
+    public int onDrawMosaicsPath(Canvas canvas) {
+        int layerCount = canvas.saveLayer(mClipFrame.left, mClipFrame.top,
+                mClipFrame.right, mClipFrame.bottom, null, Canvas.ALL_SAVE_FLAG);
 
-            int sc = canvas.saveLayer(mClipFrame.left, mClipFrame.top, mClipFrame.right, mClipFrame.bottom, null, Canvas.ALL_SAVE_FLAG);
-
+        if (!isMosaicEmpty()) {
             canvas.save();
             float scale = getScale();
             canvas.translate(mClipFrame.left, mClipFrame.top);
             canvas.scale(scale, scale);
-
             for (IMGPath path : mMosaics) {
-                path.onDraw(canvas);
+                path.onDrawMosaic(canvas, mPaint);
             }
-
             canvas.restore();
-
-            Paint p = new Paint();
-
-            p.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-
-            canvas.drawBitmap(mMosaicImage, null, mClipFrame, p);
-
-            canvas.restoreToCount(sc);
         }
+
+        return layerCount;
+    }
+
+    public void onDrawMosaic(Canvas canvas, int layerCount) {
+        canvas.drawBitmap(mMosaicImage, null, mFrame, mMosaicPaint);
+        canvas.restoreToCount(layerCount);
     }
 
     public void onDrawDoodles(Canvas canvas) {
-        if (!mDoodles.isEmpty()) {
-
+        if (!isDoodleEmpty()) {
             canvas.save();
-
             float scale = getScale();
             canvas.translate(mClipFrame.left, mClipFrame.top);
             canvas.scale(scale, scale);
 
             for (IMGPath path : mDoodles) {
-                path.onDraw(canvas);
+                path.onDrawDoodle(canvas, mPaint);
             }
-
             canvas.restore();
         }
     }

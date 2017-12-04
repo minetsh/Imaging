@@ -72,7 +72,7 @@ public class ImageTextDialog extends Dialog implements View.OnClickListener,
             }
         } else mDefaultText = text;
     }
-    
+
     public void reset() {
         setText(new IMGText(null, Color.WHITE));
     }

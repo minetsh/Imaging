@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -87,6 +88,7 @@ public class IMGStickerTextView extends FrameLayout implements IMGSticker,
                 LayoutParams.MATCH_PARENT
         );
         layoutParams.gravity = Gravity.CENTER;
+        mTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 24f);
         mTextView.setLayoutParams(layoutParams);
         mTextView.setPadding(PADDING, PADDING, PADDING, PADDING);
         mTextView.setTextColor(Color.WHITE);

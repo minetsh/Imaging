@@ -7,19 +7,20 @@
     android:layout_gravity="bottom"
     android:orientation="vertical">
 
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/layout_dm_op"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="horizontal"
         android:visibility="invisible"
         tools:visibility="visible">
-        
+
         <ViewSwitcher
             android:id="@+id/vs_dm_op"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_centerInParent="true"
             android:measureAllChildren="true">
 
             <com.xingren.imaging.view.IMGColorGroup
@@ -85,15 +86,12 @@
             android:id="@+id/btn_undo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toEndOf="@+id/vs_dm_op"
-            android:layout_toRightOf="@id/vs_dm_op"
             android:background="@null"
             android:contentDescription="@string/image_undo"
             android:onClick="onClick"
             android:src="@drawable/image_btn_undo" />
 
-    </RelativeLayout>
+    </LinearLayout>
 
     <RadioGroup
         android:id="@+id/rg_modes"
@@ -101,7 +99,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="horizontal"
-        android:padding="10dp">
+        android:padding="20dp">
 
         <RadioButton
             android:id="@+id/rb_doodle"

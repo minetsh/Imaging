@@ -1,21 +1,32 @@
 package com.xingren.imaging.sample
 
+import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.view.View
 import com.xingren.imaging.ImageEditActivity
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
+    val REQ_EDIT_IMAGE = 1
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        startActivity(Intent(this, ImageEditActivity::class.java))
+        btn_edit.setOnClickListener {
+            startActivityForResult(Intent(this, ImageEditActivity::class.java), REQ_EDIT_IMAGE)
+        }
+    }
 
-        findViewById<View>(R.id.tv_hello).setOnClickListener {
-            startActivity(Intent(this, ImageEditActivity::class.java))
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQ_EDIT_IMAGE) {
+            if (resultCode == Activity.RESULT_OK) {
+                val bitmap = data?.getParcelableExtra<Bitmap>("IMAGE")
+                iv_image.setImageBitmap(bitmap)
+            }
         }
     }
 }

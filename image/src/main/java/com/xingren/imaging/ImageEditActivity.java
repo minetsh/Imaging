@@ -1,6 +1,8 @@
 package com.xingren.imaging;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.RadioGroup;
@@ -8,7 +10,6 @@ import android.widget.ViewSwitcher;
 
 import com.xingren.imaging.core.IMGMode;
 import com.xingren.imaging.core.IMGText;
-import com.xingren.imaging.view.IMGStickerTextView;
 import com.xingren.imaging.view.IMGView;
 
 /**
@@ -44,11 +45,6 @@ public class ImageEditActivity extends Activity implements View.OnClickListener,
         mPathOpSwitcher = findViewById(R.id.vs_dm_op);
 
         mImageView = findViewById(R.id.image_canvas);
-
-        IMGStickerTextView sticker = new IMGStickerTextView(getApplicationContext());
-
-        mImageView.addStickerView(sticker);
-
     }
 
     @Override
@@ -62,6 +58,12 @@ public class ImageEditActivity extends Activity implements View.OnClickListener,
             onModeClick(IMGMode.MOSAIC);
         } else if (vid == R.id.btn_clip) {
             onModeClick(IMGMode.CLIP);
+        } else if (vid == R.id.btn_undo) {
+            onUndoClick();
+        } else if (vid == R.id.tv_done) {
+            onDoneClick();
+        } else if (vid == R.id.tv_cancel) {
+            onCancelClick();
         }
     }
 
@@ -82,7 +84,6 @@ public class ImageEditActivity extends Activity implements View.OnClickListener,
         if (mTextDialog == null) {
             mTextDialog = new ImageTextDialog(this, this);
         }
-        mTextDialog.reset();
         mTextDialog.show();
     }
 
@@ -109,5 +110,24 @@ public class ImageEditActivity extends Activity implements View.OnClickListener,
     @Override
     public void onText(IMGText text) {
         mImageView.addStickerText(text);
+    }
+
+    private void onUndoClick() {
+        IMGMode mode = mImageView.getMode();
+        if (mode == IMGMode.DOODLE) {
+            mImageView.undoDoodle();
+        } else if (mode == IMGMode.MOSAIC) {
+            mImageView.undoMosaic();
+        }
+    }
+
+    private void onDoneClick() {
+        Bitmap bitmap = mImageView.saveBitmap();
+        setResult(RESULT_OK, new Intent().putExtra("IMAGE", bitmap));
+        finish();
+    }
+
+    private void onCancelClick() {
+        finish();
     }
 }
