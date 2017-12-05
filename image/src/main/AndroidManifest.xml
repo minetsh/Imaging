@@ -3,10 +3,10 @@
 
     <application>
 
-        <activity android:name=".ImageGalleryActivity" />
+        <activity android:name=".IMGGalleryActivity" />
 
         <activity
-            android:name=".ImageEditActivity"
+            android:name=".IMGEditActivity"
             android:theme="@style/ImageEditTheme"
             android:windowSoftInputMode="stateAlwaysHidden" />
 

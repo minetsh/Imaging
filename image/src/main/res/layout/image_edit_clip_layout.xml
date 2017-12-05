@@ -13,6 +13,7 @@
         android:layout_marginStart="20dp"
         android:background="@null"
         android:contentDescription="@string/image_rotate"
+        android:onClick="onClick"
         android:src="@drawable/image_btn_rotate" />
 
     <FrameLayout
@@ -23,7 +24,7 @@
         android:paddingTop="16dp">
 
         <ImageButton
-            android:id="@+id/ib_cancel"
+            android:id="@+id/ib_clip_cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
@@ -31,21 +32,23 @@
             android:layout_marginStart="40dp"
             android:background="@null"
             android:contentDescription="@string/image_cancel"
+            android:onClick="onClick"
             android:src="@drawable/image_btn_cancel" />
 
         <TextView
-            android:id="@+id/tv_reset"
+            android:id="@+id/tv_clip_reset"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:clickable="true"
             android:focusable="true"
+            android:onClick="onClick"
             android:text="@string/image_reset"
             android:textColor="@color/image_color_text"
             android:textSize="16sp" />
 
         <ImageButton
-            android:id="@+id/ib_done"
+            android:id="@+id/ib_clip_done"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical|end"
@@ -53,6 +56,7 @@
             android:layout_marginRight="40dp"
             android:background="@null"
             android:contentDescription="@string/image_done"
+            android:onClick="onClick"
             android:src="@drawable/image_btn_ok" />
 
     </FrameLayout>

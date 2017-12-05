@@ -35,6 +35,8 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
     private IMGView mView;
 
+    private IMGMode mPreMode = IMGMode.NONE;
+
     private IMGImage mImage = new IMGImage();
 
     private GestureDetector mGDetector;
@@ -43,11 +45,7 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
     private IMGHomingAnimator mHomingAnimator;
 
-    private Path mPath = new Path();
-
-    private IMGPath mCurrentPath = new IMGPath(mPath);
-
-    private int mPathId = -2;
+    private Pen mPen = new Pen();
 
     private int mPointerCount = 0;
 
@@ -75,7 +73,7 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
     IMGDelegate(IMGView view) {
         mView = view;
-        mCurrentPath.setMode(mImage.getMode());
+        mPen.setMode(mImage.getMode());
         mGDetector = new GestureDetector(view.getContext(), new MoveAdapter());
         mSGDetector = new ScaleGestureDetector(view.getContext(), this);
     }
@@ -86,8 +84,15 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
     }
 
     void setMode(IMGMode mode) {
+        // 保存现在的编辑模式
+        mPreMode = mImage.getMode();
+
+        // 设置新的编辑模式
         mImage.setMode(mode);
-        mCurrentPath.setMode(mode);
+        mPen.setMode(mode);
+
+        // 矫正区域
+        onHoming();
     }
 
     IMGMode getMode() {
@@ -96,6 +101,10 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
     IMGImage getImage() {
         return mImage;
+    }
+
+    void setPenColor(int color) {
+        mPen.setColor(color);
     }
 
     boolean isMosaicEmpty() {
@@ -108,12 +117,15 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
     void undoDoodle() {
         mImage.undoDoodle();
+        mView.invalidate();
     }
 
     void undoMosaic() {
         mImage.undoMosaic();
+        mView.invalidate();
     }
 
+    // TODO
     Bitmap saveBitmap() {
         RectF frame = mImage.getClipFrame();
         Bitmap bitmap = Bitmap.createBitmap(Math.round(frame.width()), Math.round(frame.height()), Bitmap.Config.ARGB_8888);
@@ -185,13 +197,13 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
         mImage.onDrawImage(canvas);
 
         // 马赛克
-        if (!mImage.isMosaicEmpty() || (mImage.getMode() == IMGMode.MOSAIC && !mPath.isEmpty())) {
+        if (!mImage.isMosaicEmpty() || (mImage.getMode() == IMGMode.MOSAIC && !mPen.isEmpty())) {
             int count = mImage.onDrawMosaicsPath(canvas);
-            if (mImage.getMode() == IMGMode.MOSAIC && !mPath.isEmpty()) {
+            if (mImage.getMode() == IMGMode.MOSAIC && !mPen.isEmpty()) {
                 mDoodlePaint.setStrokeWidth(IMGPath.BASE_MOSAIC_WIDTH);
                 canvas.save();
                 canvas.translate(mView.getScrollX(), mView.getScrollY());
-                canvas.drawPath(mPath, mDoodlePaint);
+                canvas.drawPath(mPen.getPath(), mDoodlePaint);
                 canvas.restore();
             }
             mImage.onDrawMosaic(canvas, count);
@@ -199,11 +211,12 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
         // 涂鸦
         mImage.onDrawDoodles(canvas);
-        if (mImage.getMode() == IMGMode.DOODLE && !mPath.isEmpty()) {
+        if (mImage.getMode() == IMGMode.DOODLE && !mPen.isEmpty()) {
+            mDoodlePaint.setColor(mPen.getColor());
             mDoodlePaint.setStrokeWidth(IMGPath.BASE_DOODLE_WIDTH * mImage.getScale());
             canvas.save();
             canvas.translate(mView.getScrollX(), mView.getScrollY());
-            canvas.drawPath(mPath, mDoodlePaint);
+            canvas.drawPath(mPen.getPath(), mDoodlePaint);
             canvas.restore();
         }
 
@@ -237,21 +250,20 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
                 return onPathMove(event);
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                return mPathId == event.getPointerId(0) && onPathDone();
+                return mPen.isIdentity(event.getPointerId(0)) && onPathDone();
         }
         return false;
     }
 
     private boolean onPathBegin(MotionEvent event) {
-        mPath.reset();
-        mPath.moveTo(event.getX(), event.getY());
-        mPathId = event.getPointerId(0);
+        mPen.reset(event.getX(), event.getY());
+        mPen.setIdentity(event.getPointerId(0));
         return true;
     }
 
     private boolean onPathMove(MotionEvent event) {
-        if (mPathId == event.getPointerId(0)) {
-            mPath.lineTo(event.getX(), event.getY());
+        if (mPen.isIdentity(event.getPointerId(0))) {
+            mPen.lineTo(event.getX(), event.getY());
             mView.invalidate();
             return true;
         }
@@ -259,29 +271,22 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
     }
 
     private boolean onPathDone() {
-        if (mPath.isEmpty()) {
+        if (mPen.isEmpty()) {
             return false;
         }
-
-        IMGMode mode = mImage.getMode();
-        if (mode == IMGMode.DOODLE) {
-            IMGPath path = new IMGPath(new Path(mPath), mode, Color.RED);
-            mImage.addDoodle(path, mView.getScrollX(), mView.getScrollY());
-        } else if (mode == IMGMode.MOSAIC) {
-            IMGPath path = new IMGPath(new Path(mPath), mode);
-            mImage.addMosaic(path, mView.getScrollX(), mView.getScrollY());
-        }
-
-        mPath.reset();
-        mPathId = -2;
-
+        mImage.addPath(mPen.toPath(), mView.getScrollX(), mView.getScrollY());
+        mPen.reset();
         mView.invalidate();
         return true;
     }
 
     private void onHoming() {
-        startHoming(mImage.getStartHoming(mView.getScrollX(), mView.getScrollY()),
-                mImage.getEndHoming(mView.getScrollX(), mView.getScrollY()));
+        mView.invalidate();
+        stopHoming();
+        startHoming(
+                mImage.getStartHoming(mView.getScrollX(), mView.getScrollY()),
+                mImage.getEndHoming(mView.getScrollX(), mView.getScrollY())
+        );
     }
 
     private void startHoming(IMGHoming sHoming, IMGHoming eHoming) {
@@ -397,5 +402,45 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
             ((ViewGroup) parent).removeView(stickerView);
         }
         return true;
+    }
+
+    void cancelClip() {
+        setMode(mPreMode);
+    }
+
+    private static class Pen extends IMGPath {
+
+        private int identity = Integer.MIN_VALUE;
+
+        public void reset() {
+            this.path.reset();
+            this.identity = Integer.MIN_VALUE;
+        }
+
+        public void reset(float x, float y) {
+            this.path.reset();
+            this.path.moveTo(x, y);
+            this.identity = Integer.MIN_VALUE;
+        }
+
+        public void setIdentity(int identity) {
+            this.identity = identity;
+        }
+
+        public boolean isIdentity(int identity) {
+            return this.identity == identity;
+        }
+
+        public void lineTo(float x, float y) {
+            this.path.lineTo(x, y);
+        }
+
+        public boolean isEmpty() {
+            return this.path.isEmpty();
+        }
+
+        public IMGPath toPath() {
+            return new IMGPath(new Path(this.path), getMode(), getColor(), getWidth());
+        }
     }
 }

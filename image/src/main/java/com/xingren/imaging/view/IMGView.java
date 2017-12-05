@@ -2,7 +2,6 @@ package com.xingren.imaging.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -10,7 +9,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import com.xingren.imaging.R;
 import com.xingren.imaging.core.IMGMode;
 import com.xingren.imaging.core.IMGText;
 import com.xingren.imaging.core.sticker.IMGSticker;
@@ -18,7 +16,7 @@ import com.xingren.imaging.core.sticker.IMGSticker;
 /**
  * Created by felix on 2017/11/14 下午6:43.
  */
-
+// TODO clip外不加入path
 public class IMGView extends FrameLayout {
 
     private static final String TAG = "IMGView";
@@ -40,9 +38,6 @@ public class IMGView extends FrameLayout {
 
     private void initialize(Context context) {
         mDelegate = new IMGDelegate(this);
-        BitmapFactory.Options options = new BitmapFactory.Options();
-
-        mDelegate.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.am, options));
     }
 
     public void setImageBitmap(Bitmap image) {
@@ -66,7 +61,11 @@ public class IMGView extends FrameLayout {
     }
 
     public void cancelClip() {
-        // TODO
+        mDelegate.cancelClip();
+    }
+
+    public void setPenColor(int color) {
+        mDelegate.setPenColor(color);
     }
 
     public boolean isDoodleEmpty() {
@@ -114,7 +113,7 @@ public class IMGView extends FrameLayout {
     }
 
     public void addStickerText(IMGText text) {
-        IMGStickerTextView textView = new IMGStickerTextView(getContext());
+        IMGStickerTextViewOld textView = new IMGStickerTextViewOld(getContext());
 
         textView.setText(text);
 

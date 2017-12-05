@@ -18,20 +18,20 @@ import com.xingren.imaging.view.IMGColorGroup;
  * Created by felix on 2017/12/1 上午11:21.
  */
 
-public class ImageTextDialog extends Dialog implements View.OnClickListener,
+public class IMGTextEditDialog extends Dialog implements View.OnClickListener,
         RadioGroup.OnCheckedChangeListener {
 
-    private static final String TAG = "ImageTextDialog";
+    private static final String TAG = "IMGTextEditDialog";
 
     private EditText mEditText;
 
     private Callback mCallback;
-
+    
     private IMGText mDefaultText;
 
     private IMGColorGroup mColorGroup;
 
-    public ImageTextDialog(Context context, Callback callback) {
+    public IMGTextEditDialog(Context context, Callback callback) {
         super(context, R.style.ImageTextDialog);
         setContentView(R.layout.image_text_dialog);
         mCallback = callback;
@@ -59,7 +59,7 @@ public class ImageTextDialog extends Dialog implements View.OnClickListener,
         if (mDefaultText != null) {
             setText(mDefaultText);
             mDefaultText = null;
-        }
+        } else mEditText.setText("");
         mColorGroup.setCheckColor(mEditText.getCurrentTextColor());
     }
 

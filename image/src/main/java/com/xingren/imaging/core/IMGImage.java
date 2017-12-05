@@ -27,7 +27,6 @@ public class IMGImage {
 
     private static final String TAG = "IMGImage";
 
-    // TODO image is null
     private Bitmap mImage, mMosaicImage;
 
     /**
@@ -54,6 +53,8 @@ public class IMGImage {
      * 裁剪窗口
      */
     private IMGClipWindow mClipWin = new IMGClipWindow();
+
+    private boolean isClipInited = false;
 
     /**
      * 编辑模式
@@ -99,6 +100,12 @@ public class IMGImage {
 
     private static final boolean DEBUG = true;
 
+    private static final Bitmap DEFAULT_IMAGE;
+
+    static {
+        DEFAULT_IMAGE = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    }
+
     {
         // Doodle&Mosaic 's paint
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -111,7 +118,7 @@ public class IMGImage {
     }
 
     public IMGImage() {
-
+        mImage = DEFAULT_IMAGE;
     }
 
     public void setBitmap(Bitmap bitmap) {
@@ -141,8 +148,9 @@ public class IMGImage {
 
         if (mMode == IMGMode.MOSAIC) {
             makeMosaicBitmap();
-        } else if (mMode == IMGMode.CLIP && mImage != null) {
-            mClipWin.setImageSize(mImage.getWidth(), mImage.getHeight());
+        } else if (mMode == IMGMode.CLIP) {
+            isClipInited = false;
+            mClipWin.reset(mImage.getWidth(), mImage.getHeight());
         }
     }
 
@@ -198,8 +206,9 @@ public class IMGImage {
         isInitialHoming = false;
         onWindowChanged(mWindowPivotX, mWindowPivotY, mWindowWidth, mWindowHeight);
 
-        if (mImage != null && mMode == IMGMode.CLIP) {
-            mClipWin.setImageSize(mImage.getWidth(), mImage.getHeight());
+        if (mMode == IMGMode.CLIP) {
+            isClipInited = false;
+            mClipWin.reset(mImage.getWidth(), mImage.getHeight());
         }
     }
 
@@ -214,12 +223,28 @@ public class IMGImage {
     public IMGHoming getEndHoming(float scrollX, float scrollY) {
         IMGHoming homing = new IMGHoming(scrollX, scrollY, getScale());
         if (mMode == IMGMode.CLIP) {
-            RectF frame = new RectF(mClipWin.getFrame());
+            RectF frame = new RectF(mClipWin.getFrame()), clipFrame = new RectF();
             frame.offset(scrollX, scrollY);
+            if (!mClipWin.isClipping()) {
 
-            if (!mClipFrame.contains(frame)) {
+                // 第一次时缩放到裁剪区域内
+                float scale = Math.max(
+                        frame.width() / mClipFrame.width(),
+                        frame.height() / mClipFrame.height()
+                );
+
+                M.setScale(scale, scale, mClipFrame.centerX(), mClipFrame.centerY());
+                M.mapRect(clipFrame, mClipFrame);
+
+                homing.x += clipFrame.left - frame.left;
+                homing.y += clipFrame.top - frame.top;
+
+                homing.scale *= scale;
+
+                // 开启裁剪模式
+                mClipWin.setClipping(true);
+            } else if (!mClipFrame.contains(frame)) {
                 // TODO
-                RectF clipFrame = new RectF();
 
                 float scale = 1f;
 
@@ -282,26 +307,22 @@ public class IMGImage {
         }
     }
 
-    public void addDoodle(IMGPath doodle, float sx, float sy) {
-        if (doodle != null) {
+    public void addPath(IMGPath path, float sx, float sy) {
+        if (path == null) return;
 
-            float scale = 1f / getScale();
-            M.setTranslate(sx - mClipFrame.left, sy - mClipFrame.top);
-            M.postScale(scale, scale);
-            doodle.transform(M);
+        float scale = 1f / getScale();
+        M.setTranslate(sx - mClipFrame.left, sy - mClipFrame.top);
+        M.postScale(scale, scale);
+        path.transform(M);
 
-            mDoodles.add(doodle);
-        }
-    }
-
-    public void addMosaic(IMGPath mosaic, float sx, float sy) {
-        if (mosaic != null) {
-            float scale = 1f / getScale();
-            M.setTranslate(sx - mClipFrame.left, sy - mClipFrame.top);
-            M.postScale(scale, scale);
-            mosaic.transform(M);
-
-            mMosaics.add(mosaic);
+        switch (path.getMode()) {
+            case DOODLE:
+                mDoodles.add(path);
+                break;
+            case MOSAIC:
+                path.setWidth(path.getWidth() * scale);
+                mMosaics.add(path);
+                break;
         }
     }
 
@@ -363,7 +384,7 @@ public class IMGImage {
             return;
         }
 
-        if (!isInitialHoming && mImage != null) {
+        if (!isInitialHoming) {
             onInitialHoming(pivotX, pivotY, width, height);
         } else {
 
@@ -406,8 +427,8 @@ public class IMGImage {
     }
 
     private void onInitialHomingDone() {
-        if (mMode == IMGMode.CLIP && mImage != null) {
-            mClipWin.setImageSize(mImage.getWidth(), mImage.getHeight());
+        if (mMode == IMGMode.CLIP) {
+            mClipWin.reset(mImage.getWidth(), mImage.getHeight());
         }
     }
 
@@ -556,5 +577,13 @@ public class IMGImage {
 
     public void onScaleEnd() {
 
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        if (DEFAULT_IMAGE != null) {
+            DEFAULT_IMAGE.recycle();
+        }
     }
 }

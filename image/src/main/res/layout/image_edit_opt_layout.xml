@@ -8,7 +8,7 @@
     android:orientation="vertical">
 
     <LinearLayout
-        android:id="@+id/layout_dm_op"
+        android:id="@+id/layout_op_sub"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
@@ -18,7 +18,7 @@
         tools:visibility="visible">
 
         <ViewSwitcher
-            android:id="@+id/vs_dm_op"
+            android:id="@+id/vs_op_sub"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:measureAllChildren="true">

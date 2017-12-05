@@ -19,10 +19,22 @@
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowContentOverlay">@null</item>
 
-        <item name="android:windowSoftInputMode">stateVisible|adjustResize</item>
+        <item name="android:windowSoftInputMode">stateAlwaysVisible|adjustResize</item>
 
         <item name="android:windowFrame">@null</item>
         <item name="android:windowBackground">@android:color/transparent</item>
+
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.8</item>
+
+        <item name="android:windowAnimationStyle">@style/ImageDialogAnimation</item>
+
+    </style>
+
+    <style name="ImageDialogAnimation" parent="android:Animation.Dialog">
+
+        <item name="android:windowEnterAnimation">@anim/image_dialog_enter</item>
+        <item name="android:windowExitAnimation">@anim/image_dialog_exit</item>
 
     </style>
 

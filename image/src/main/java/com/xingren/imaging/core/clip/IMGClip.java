@@ -8,10 +8,18 @@ import android.graphics.RectF;
 
 public interface IMGClip {
 
+    /**
+     * 裁剪区域的边距
+     */
     float CLIP_MARGIN = 60f;
 
-    float CLIP_FRAME_MIN = 100f;
+    /**
+     * 裁剪区域最小尺寸
+     */
+    float CLIP_FRAME_MIN = 200f;
 
+
+    // TODO
     enum Anchor {
         LEFT(1),
         RIGHT(2),

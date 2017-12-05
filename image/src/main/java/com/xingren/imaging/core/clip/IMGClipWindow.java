@@ -6,53 +6,74 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 
+import com.xingren.imaging.core.util.IMGUtils;
+
 /**
  * Created by felix on 2017/11/29 下午5:41.
  */
 
 public class IMGClipWindow implements IMGClip {
 
+    /**
+     * 裁剪区域
+     */
     private RectF mFrame = new RectF();
 
+    /**
+     * 裁剪窗口
+     */
     private RectF mWinFrame = new RectF();
 
-    private float mClipWidth, mClipHeight;
+    /**
+     * 是否在裁剪中
+     */
+    private boolean isClipping = false;
 
     private static final float HP = 0.8f;
 
     private static final float D = 40f;
 
-    private static final Paint P = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-    static {
-        P.setColor(Color.WHITE);
-        P.setStyle(Paint.Style.STROKE);
-        P.setStrokeWidth(8);
-        P.setMaskFilter(new BlurMaskFilter(10, BlurMaskFilter.Blur.NORMAL));
+    {
+        mPaint.setColor(Color.WHITE);
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStrokeWidth(8);
+        mPaint.setMaskFilter(new BlurMaskFilter(10, BlurMaskFilter.Blur.NORMAL));
     }
 
-    public void setClipWinSize(float w, float h) {
-        mClipWidth = w;
-        mClipHeight = h;
+    public IMGClipWindow() {
 
-        mWinFrame.set(0, 0, w, h * HP);
+    }
+
+    /**
+     * 计算裁剪窗口区域
+     */
+    public void setClipWinSize(float width, float height) {
+        mWinFrame.set(0, 0, width, height * HP);
+
         if (mFrame.isEmpty()) {
-            mFrame.set(0, 0, w, h);
+            mFrame.set(0, 0, width, height);
+        } else {
+            IMGUtils.center(mWinFrame, mFrame);
         }
     }
 
-    public void setImageSize(int width, int height) {
+    /**
+     * 重置裁剪
+     */
+    public void reset(float imgWidth, float imgHeight) {
+        isClipping = false;
+        mFrame.set(0, 0, imgWidth, imgHeight);
+        IMGUtils.fitCenter(mWinFrame, mFrame, CLIP_MARGIN);
+    }
 
-        // 可用宽高
-        float w = mWinFrame.width() - 2 * CLIP_MARGIN;
-        float h = mWinFrame.height() - 2 * CLIP_MARGIN;
+    public boolean isClipping() {
+        return isClipping;
+    }
 
-        float scale = Math.min(w / width, h / height);
-
-        mFrame.set(0, 0, width * scale, height * scale);
-
-        mFrame.offset(mClipWidth / 2 - mFrame.centerX(), mClipHeight * HP / 2 - mFrame.centerY());
-
+    public void setClipping(boolean clipping) {
+        isClipping = clipping;
     }
 
     public RectF getFrame() {
@@ -60,7 +81,7 @@ public class IMGClipWindow implements IMGClip {
     }
 
     public void onDraw(Canvas canvas) {
-        canvas.drawRect(mFrame, P);
+        canvas.drawRect(mFrame, mPaint);
     }
 
     public Anchor getAnchor(float x, float y) {
