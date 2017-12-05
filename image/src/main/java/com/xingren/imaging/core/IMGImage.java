@@ -15,6 +15,7 @@ import com.xingren.imaging.core.clip.IMGClip;
 import com.xingren.imaging.core.clip.IMGClipWindow;
 import com.xingren.imaging.core.homing.IMGHoming;
 import com.xingren.imaging.core.sticker.IMGSticker;
+import com.xingren.imaging.core.util.IMGUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,16 +55,15 @@ public class IMGImage {
      */
     private IMGClipWindow mClipWin = new IMGClipWindow();
 
-    private boolean isClipInited = false;
-
     /**
      * 编辑模式
      */
     private IMGMode mMode = IMGMode.NONE;
 
-    private float mWindowPivotX, mWindowPivotY;
-
-    private int mWindowWidth, mWindowHeight;
+    /**
+     * 可视区域，无Scroll 偏移区域
+     */
+    private RectF mWindow = new RectF();
 
     /**
      * 是否初始位置
@@ -149,8 +149,7 @@ public class IMGImage {
         if (mMode == IMGMode.MOSAIC) {
             makeMosaicBitmap();
         } else if (mMode == IMGMode.CLIP) {
-            isClipInited = false;
-            mClipWin.reset(mImage.getWidth(), mImage.getHeight());
+            mClipWin.reset(mClipFrame.width(), mClipFrame.height());
         }
     }
 
@@ -176,6 +175,12 @@ public class IMGImage {
 
     public RectF getClipFrame() {
         return mClipFrame;
+    }
+
+    public void clip(float sx, float sy) {
+        RectF frame = new RectF(mClipWin.getFrame());
+        frame.offset(sx, sy);
+        mClipFrame.set(frame);
     }
 
     private void makeMosaicBitmap() {
@@ -204,11 +209,10 @@ public class IMGImage {
 
     private void onImageChanged() {
         isInitialHoming = false;
-        onWindowChanged(mWindowPivotX, mWindowPivotY, mWindowWidth, mWindowHeight);
+        onWindowChanged(mWindow.width(), mWindow.height());
 
         if (mMode == IMGMode.CLIP) {
-            isClipInited = false;
-            mClipWin.reset(mImage.getWidth(), mImage.getHeight());
+            mClipWin.reset(mClipFrame.width(), mClipFrame.height());
         }
     }
 
@@ -223,79 +227,19 @@ public class IMGImage {
     public IMGHoming getEndHoming(float scrollX, float scrollY) {
         IMGHoming homing = new IMGHoming(scrollX, scrollY, getScale());
         if (mMode == IMGMode.CLIP) {
-            RectF frame = new RectF(mClipWin.getFrame()), clipFrame = new RectF();
+            RectF frame = new RectF(mClipWin.getFrame());
             frame.offset(scrollX, scrollY);
             if (!mClipWin.isClipping()) {
-
-                // 第一次时缩放到裁剪区域内
-                float scale = Math.max(
-                        frame.width() / mClipFrame.width(),
-                        frame.height() / mClipFrame.height()
-                );
-
-                M.setScale(scale, scale, mClipFrame.centerX(), mClipFrame.centerY());
-                M.mapRect(clipFrame, mClipFrame);
-
-                homing.x += clipFrame.left - frame.left;
-                homing.y += clipFrame.top - frame.top;
-
-                homing.scale *= scale;
-
+                homing.ccat(IMGUtils.fill(frame, mClipFrame));
                 // 开启裁剪模式
                 mClipWin.setClipping(true);
-            } else if (!mClipFrame.contains(frame)) {
-                // TODO
-
-                float scale = 1f;
-
-                if (mClipFrame.width() < frame.width()) {
-                    scale = Math.max(scale, frame.width() / mClipFrame.width());
-                }
-
-                if (mClipFrame.height() < frame.height()) {
-                    scale = Math.max(scale, frame.height() / mClipFrame.height());
-                }
-
-                M.setScale(scale, scale, mClipFrame.centerX(), mClipFrame.centerY());
-                M.mapRect(clipFrame, mClipFrame);
-
-                homing.scale *= scale;
-
-                if (clipFrame.left > frame.left) {
-                    homing.x += clipFrame.left - frame.left;
-                } else if (clipFrame.right < frame.right) {
-                    homing.x += clipFrame.right - frame.right;
-                }
-
-                if (clipFrame.top > frame.top) {
-                    homing.y += clipFrame.top - frame.top;
-                } else if (clipFrame.bottom < frame.bottom) {
-                    homing.y += clipFrame.bottom - frame.bottom;
-                }
+            } else {
+                homing.ccat(IMGUtils.fillHoming(frame, mClipFrame));
             }
-
         } else {
-
-            // TODO
-            if (!mClipFrame.contains(scrollX, scrollY, scrollX + mWindowWidth, scrollY + mWindowHeight)) {
-
-                if (mClipFrame.width() < mWindowWidth) {
-                    homing.scale *= mWindowWidth / mClipFrame.width();
-                    homing.x = mClipFrame.centerX() - mWindowWidth / 2;
-                } else if (mClipFrame.left > scrollX) {
-                    homing.x = mClipFrame.left;
-                } else if (mClipFrame.right < scrollX + mWindowWidth) {
-                    homing.x = mClipFrame.right - mWindowWidth;
-                }
-
-                if (mClipFrame.height() < mWindowHeight) {
-                    homing.y = mClipFrame.centerY() - mWindowHeight / 2;
-                } else if (mClipFrame.top > scrollY) {
-                    homing.y = mClipFrame.top;
-                } else if (mClipFrame.bottom < scrollY + mWindowHeight) {
-                    homing.y = mClipFrame.bottom - mWindowHeight;
-                }
-            }
+            RectF win = new RectF(mWindow);
+            win.offset(scrollX, scrollY);
+            homing.ccat(IMGUtils.fitHoming(win, mClipFrame));
         }
 
         return homing;
@@ -371,26 +315,20 @@ public class IMGImage {
         }
     }
 
-    public void onWindowChanged(float pivotX, float pivotY, int width, int height) {
-        // Window's pivot coordinate.
-        mWindowPivotX = pivotX;
-        mWindowPivotY = pivotY;
-
-        // Window's size.
-        mWindowWidth = width;
-        mWindowHeight = height;
-
+    public void onWindowChanged(float width, float height) {
         if (width == 0 || height == 0) {
             return;
         }
 
+        mWindow.set(0, 0, width, height);
+
         if (!isInitialHoming) {
-            onInitialHoming(pivotX, pivotY, width, height);
+            onInitialHoming(width, height);
         } else {
 
             // Pivot to fit window.
             M.reset();
-            M.setTranslate(mWindowPivotX - mClipFrame.centerX(), mWindowPivotY - mClipFrame.centerY());
+            M.setTranslate(mWindow.centerX() - mClipFrame.centerX(), mWindow.centerY() - mClipFrame.centerY());
             M.mapRect(mFrame);
             M.mapRect(mClipFrame);
         }
@@ -398,7 +336,7 @@ public class IMGImage {
         mClipWin.setClipWinSize(width, height);
     }
 
-    private void onInitialHoming(float pivotX, float pivotY, int width, int height) {
+    private void onInitialHoming(float width, float height) {
 
         mHomeFrame.set(0, 0, width, height);
         mFrame.set(0, 0, mImage.getWidth(), mImage.getHeight());
@@ -418,7 +356,7 @@ public class IMGImage {
         // Scale to fit window.
         M.reset();
         M.setScale(scale, scale, mFrame.centerX(), mFrame.centerY());
-        M.postTranslate(mWindowPivotX - mFrame.centerX(), mWindowPivotY - mFrame.centerY());
+        M.postTranslate(mWindow.centerX() - mFrame.centerX(), mWindow.centerY() - mFrame.centerY());
         M.mapRect(mFrame);
         M.mapRect(mClipFrame);
 
@@ -428,7 +366,7 @@ public class IMGImage {
 
     private void onInitialHomingDone() {
         if (mMode == IMGMode.CLIP) {
-            mClipWin.reset(mImage.getWidth(), mImage.getHeight());
+            mClipWin.reset(mClipFrame.width(), mClipFrame.height());
         }
     }
 
@@ -437,12 +375,8 @@ public class IMGImage {
     }
 
     public void onDrawImage(Canvas canvas) {
-//        canvas.clipRect(mClipFrame);
-
-        // TODO
-        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
-
-        canvas.drawBitmap(mImage, null, mClipFrame, p);
+        canvas.clipRect(mMode == IMGMode.CLIP ? mFrame : mClipFrame);
+        canvas.drawBitmap(mImage, null, mFrame, null);
     }
 
     public int onDrawMosaicsPath(Canvas canvas) {
@@ -481,7 +415,7 @@ public class IMGImage {
             canvas.restore();
         }
     }
-
+    
     public void onDrawStickers(Canvas canvas) {
         for (IMGSticker sticker : mBackStickers) {
             if (!sticker.isShowing()) {

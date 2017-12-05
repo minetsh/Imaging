@@ -233,11 +233,6 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
     }
 
     private boolean onTouchNONE(MotionEvent event) {
-        switch (event.getActionMasked()) {
-            case MotionEvent.ACTION_UP:
-                onHoming();
-                break;
-        }
         return mGDetector.onTouchEvent(event);
     }
 
@@ -339,9 +334,9 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
     }
 
     public void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        if (!changed) return;
-        mImage.onWindowChanged(mView.getScrollX() + mView.getPivotX(),
-                mView.getScrollY() + mView.getPivotY(), mView.getWidth(), mView.getHeight());
+        if (changed) {
+            mImage.onWindowChanged(right - left, bottom - top);
+        }
     }
 
     @Override
@@ -406,6 +401,12 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
     void cancelClip() {
         setMode(mPreMode);
+    }
+
+    void doClip() {
+        mImage.clip(mView.getScrollX(), mView.getScrollY());
+        setMode(mPreMode);
+        onHoming();
     }
 
     private static class Pen extends IMGPath {

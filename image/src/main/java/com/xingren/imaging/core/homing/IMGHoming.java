@@ -26,6 +26,18 @@ public class IMGHoming {
         this.scale = scale;
     }
 
+    public void concat(IMGHoming homing) {
+        this.scale *= homing.scale;
+        this.x += homing.x;
+        this.y += homing.y;
+    }
+
+    public void ccat(IMGHoming homing) {
+        this.scale *= homing.scale;
+        this.x -= homing.x;
+        this.y -= homing.y;
+    }
+
     @Override
     public String toString() {
         return "IMGHoming{" +

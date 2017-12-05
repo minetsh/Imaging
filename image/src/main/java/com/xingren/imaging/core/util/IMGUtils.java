@@ -1,12 +1,17 @@
 package com.xingren.imaging.core.util;
 
+import android.graphics.Matrix;
 import android.graphics.RectF;
+
+import com.xingren.imaging.core.homing.IMGHoming;
 
 /**
  * Created by felix on 2017/12/5 下午2:20.
  */
 
 public class IMGUtils {
+
+    private static final Matrix M = new Matrix();
 
     private IMGUtils() {
 
@@ -52,5 +57,95 @@ public class IMGUtils {
                 win.centerX() + (paddingLeft - paddingRight) / 2 - frame.centerX(),
                 win.centerY() + (paddingTop - paddingBottom) / 2 - frame.centerY()
         );
+    }
+
+    public static IMGHoming fitHoming(RectF win, RectF frame) {
+        IMGHoming dHoming = new IMGHoming(0, 0, 1f);
+
+        if (frame.contains(win)) {
+            // 不需要Fit
+            return dHoming;
+        }
+
+        // 宽高都小于Win，才有必要放大
+        if (frame.width() < win.width() && frame.height() < win.height()) {
+            dHoming.scale = Math.min(win.width() / frame.width(), win.height() / frame.height());
+        }
+
+        RectF rect = new RectF();
+        M.setScale(dHoming.scale, dHoming.scale, frame.centerX(), frame.centerY());
+        M.mapRect(rect, frame);
+
+        if (rect.width() < win.width()) {
+            dHoming.x += win.centerX() - rect.centerX();
+        } else {
+            if (rect.left > win.left) {
+                dHoming.x += win.left - rect.left;
+            } else if (rect.right < win.right) {
+                dHoming.x += win.right - rect.right;
+            }
+        }
+
+        if (rect.height() < win.height()) {
+            dHoming.y += win.centerY() - rect.centerY();
+        } else {
+            if (rect.top > win.top) {
+                dHoming.y += win.top - rect.top;
+            } else if (rect.bottom < win.bottom) {
+                dHoming.y += win.bottom - rect.bottom;
+            }
+        }
+
+        return dHoming;
+    }
+
+    public static IMGHoming fillHoming(RectF win, RectF frame) {
+        IMGHoming dHoming = new IMGHoming(0, 0, 1f);
+        if (frame.contains(win)) {
+            // 不需要Fill
+            return dHoming;
+        }
+
+        if (frame.width() < win.width() || frame.height() < win.height()) {
+            dHoming.scale = Math.max(win.width() / frame.width(), win.height() / frame.height());
+        }
+
+        RectF rect = new RectF();
+        M.setScale(dHoming.scale, dHoming.scale, frame.centerX(), frame.centerY());
+        M.mapRect(rect, frame);
+
+        if (rect.left > win.left) {
+            dHoming.x += win.left - rect.left;
+        } else if (rect.right < win.right) {
+            dHoming.x += win.right - rect.right;
+        }
+
+        if (rect.top > win.top) {
+            dHoming.y += win.top - rect.top;
+        } else if (rect.bottom < win.bottom) {
+            dHoming.y += win.bottom - rect.bottom;
+        }
+
+        return dHoming;
+    }
+
+    public static IMGHoming fill(RectF win, RectF frame) {
+        IMGHoming dHoming = new IMGHoming(0, 0, 1f);
+
+        if (win.equals(frame)) {
+            return dHoming;
+        }
+
+        // 第一次时缩放到裁剪区域内
+        dHoming.scale = Math.max(win.width() / frame.width(), win.height() / frame.height());
+
+        RectF rect = new RectF();
+        M.setScale(dHoming.scale, dHoming.scale, frame.centerX(), frame.centerY());
+        M.mapRect(rect, frame);
+
+        dHoming.x += win.centerX() - rect.centerX();
+        dHoming.y += win.centerY() - rect.centerY();
+
+        return dHoming;
     }
 }

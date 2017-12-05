@@ -57,7 +57,7 @@ public class IMGView extends FrameLayout {
     }
 
     public void doClip() {
-        // TODO
+        mDelegate.doClip();
     }
 
     public void cancelClip() {

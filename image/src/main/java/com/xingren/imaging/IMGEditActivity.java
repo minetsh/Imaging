@@ -69,7 +69,8 @@ public class IMGEditActivity extends IMGEditBaseActivity {
 
     @Override
     public void onDoneClipClick() {
-
+        mImgView.doClip();
+        setOpDisplay(mImgView.getMode() == IMGMode.CLIP ? OP_CLIP : OP_NORMAL);
     }
 
     @Override
