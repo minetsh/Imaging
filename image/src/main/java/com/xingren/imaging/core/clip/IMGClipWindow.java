@@ -1,10 +1,10 @@
 package com.xingren.imaging.core.clip;
 
-import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.RectF;
 
 import com.xingren.imaging.core.util.IMGUtils;
@@ -25,6 +25,8 @@ public class IMGClipWindow implements IMGClip {
      */
     private RectF mWinFrame = new RectF();
 
+    private float mWinWidth, mWinHeight;
+
     private float[] mCells = new float[16];
 
     private float[] mCorners = new float[32];
@@ -36,7 +38,11 @@ public class IMGClipWindow implements IMGClip {
      */
     private boolean isClipping = false;
 
+    private boolean isShowShade = false;
+
     private Matrix M = new Matrix();
+
+    private Path mShadePath = new Path();
 
     private Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
@@ -51,10 +57,13 @@ public class IMGClipWindow implements IMGClip {
 
     private static final int COLOR_CORNER = Color.WHITE;
 
+    private static final int COLOR_SHADE = 0xAA000000;
+
     {
+        mShadePath.setFillType(Path.FillType.EVEN_ODD);
+
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeCap(Paint.Cap.SQUARE);
-        mPaint.setMaskFilter(new BlurMaskFilter(10, BlurMaskFilter.Blur.NORMAL));
     }
 
     public IMGClipWindow() {
@@ -65,6 +74,8 @@ public class IMGClipWindow implements IMGClip {
      * 计算裁剪窗口区域
      */
     public void setClipWinSize(float width, float height) {
+        mWinWidth = width;
+        mWinHeight = height;
         mWinFrame.set(0, 0, width, height * VERTICAL_RATIO);
 
         if (!mFrame.isEmpty()) {
@@ -101,6 +112,14 @@ public class IMGClipWindow implements IMGClip {
         return mFrame;
     }
 
+    public boolean isShowShade() {
+        return isShowShade;
+    }
+
+    public void setShowShade(boolean showShade) {
+        isShowShade = showShade;
+    }
+
     public void onDraw(Canvas canvas) {
         float[] size = {mFrame.width(), mFrame.height()};
         for (int i = 0; i < mBaseSizes.length; i++) {
@@ -118,7 +137,10 @@ public class IMGClipWindow implements IMGClip {
                     + CLIP_CORNER_SIZES[CLIP_CORNERS[i] & 3] + CLIP_CORNER_STEPS[CLIP_CORNERS[i] >> 2];
         }
 
+        onDrawShade(canvas);
+
         canvas.translate(mFrame.left, mFrame.top);
+        mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setColor(COLOR_CELL);
         mPaint.setStrokeWidth(CLIP_THICKNESS_CELL);
         canvas.drawLines(mCells, mPaint);
@@ -134,41 +156,41 @@ public class IMGClipWindow implements IMGClip {
         canvas.drawLines(mCorners, mPaint);
     }
 
-    // TODO
+    private void onDrawShade(Canvas canvas) {
+        if (!isShowShade) return;
+
+        // 计算遮罩图形
+        mShadePath.reset();
+        mShadePath.moveTo(0, 0);
+        mShadePath.lineTo(mWinWidth, 0);
+        mShadePath.lineTo(mWinWidth, mWinHeight);
+        mShadePath.lineTo(0, mWinHeight);
+        mShadePath.lineTo(0, 0);
+
+        mShadePath.moveTo(mFrame.left, mFrame.top);
+        mShadePath.lineTo(mFrame.right, mFrame.top);
+        mShadePath.lineTo(mFrame.right, mFrame.bottom);
+        mShadePath.lineTo(mFrame.left, mFrame.bottom);
+        mShadePath.lineTo(mFrame.left, mFrame.top);
+
+        mPaint.setColor(COLOR_SHADE);
+        mPaint.setStyle(Paint.Style.FILL);
+        canvas.drawPath(mShadePath, mPaint);
+    }
+
     public Anchor getAnchor(float x, float y) {
-
-        int h = -1, v = -1;
-
-        if (Math.abs(mFrame.left - x) < CLIP_CORNER_SIZE) {
-            h = Anchor.LEFT.ordinal();
-        }
-
-        if (Math.abs(mFrame.right - x) < CLIP_CORNER_SIZE) {
-            h = Anchor.RIGHT.ordinal();
-        }
-
-        if (Math.abs(mFrame.top - y) < CLIP_CORNER_SIZE) {
-            v = Anchor.TOP.ordinal();
-        }
-
-        if (Math.abs(mFrame.bottom - y) < CLIP_CORNER_SIZE) {
-            v = Anchor.BOTTOM.ordinal();
-        }
-
-        if (h >= 0 || v >= 0) {
-            int index = 0;
-
-            if (v >= 0) {
-                index = v;
+        if (Anchor.isCohesionContains(mFrame, -CLIP_CORNER_SIZE, x, y)
+                && !Anchor.isCohesionContains(mFrame, CLIP_CORNER_SIZE, x, y)) {
+            int v = 0;
+            float[] cohesion = Anchor.cohesion(mFrame, 0);
+            float[] pos = {x, y};
+            for (int i = 0; i < cohesion.length; i++) {
+                if (Math.abs(cohesion[i] - pos[i >> 1]) < CLIP_CORNER_SIZE) {
+                    v |= 1 << i;
+                }
             }
-
-            if (h >= 0) {
-                index = (index << 1) | h;
-            }
-
-            return Anchor.values()[index];
+            return Anchor.valueOf(v);
         }
-
         return null;
     }
 

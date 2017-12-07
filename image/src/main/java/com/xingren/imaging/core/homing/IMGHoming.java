@@ -38,6 +38,10 @@ public class IMGHoming {
         this.y -= homing.y;
     }
 
+    public static boolean isRotate(IMGHoming sHoming, IMGHoming eHoming) {
+        return Float.compare(sHoming.rotate, eHoming.rotate) != 0;
+    }
+
     @Override
     public String toString() {
         return "IMGHoming{" +

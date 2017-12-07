@@ -239,7 +239,7 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
         if (mImage.getMode() == IMGMode.CLIP) {
             canvas.save();
             canvas.translate(mView.getScrollX(), mView.getScrollY());
-            mImage.onDrawClipWindow(canvas);
+            mImage.onDrawClip(canvas);
             canvas.restore();
         }
 
@@ -252,7 +252,7 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
     private boolean onTouchPath(MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                mImage.onTouchDown();
+                mImage.onTouchDown(event.getX(), event.getY());
                 return onPathBegin(event);
             case MotionEvent.ACTION_MOVE:
                 return onPathMove(event);
@@ -303,21 +303,24 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
             mHomingAnimator.addUpdateListener(this);
             mHomingAnimator.addListener(this);
         }
-        mHomingAnimator.setObjectValues(sHoming, eHoming);
+        mHomingAnimator.setHomingValues(sHoming, eHoming);
         mHomingAnimator.start();
     }
 
     private boolean onScroll(float dx, float dy) {
         if (!mImage.onScroll(-dx, -dy)) {
-            mView.scrollBy(Math.round(dx), Math.round(dy));
-        } else {
-            mView.invalidate();
+            return onScrollTo(mView.getScrollX() + Math.round(dx), mView.getScrollY() + Math.round(dy));
         }
+        mView.invalidate();
         return true;
     }
 
-    private void onScrollTo(float x, float y) {
-        mView.scrollTo(Math.round(x), Math.round(y));
+    private boolean onScrollTo(int x, int y) {
+        if (mView.getScrollX() != x || mView.getScrollY() != y) {
+            mView.scrollTo(x, y);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -358,25 +361,24 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
         IMGHoming homing = (IMGHoming) animation.getAnimatedValue();
         mImage.setScale(homing.scale);
         mImage.setRotate(homing.rotate);
-        onScrollTo(homing.x, homing.y);
-        mView.invalidate();
-
-        Log.d(TAG, "Homing=" + homing);
+        if (!onScrollTo(Math.round(homing.x), Math.round(homing.y))) {
+            mView.invalidate();
+        }
     }
 
     @Override
     public void onAnimationStart(Animator animation) {
-
+        mImage.onHomingStart(mHomingAnimator.isRotate());
     }
 
     @Override
     public void onAnimationEnd(Animator animation) {
-        mImage.onHomingEnd();
+        mImage.onHomingEnd(mHomingAnimator.isRotate());
     }
 
     @Override
     public void onAnimationCancel(Animator animation) {
-
+        mImage.onHomingCancel(mHomingAnimator.isRotate());
     }
 
     @Override
@@ -438,6 +440,7 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
     }
 
     void cancelClip() {
+        mImage.toBackupClip();
         setMode(mPreMode);
     }
 

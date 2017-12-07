@@ -99,6 +99,46 @@ public class IMGUtils {
         return dHoming;
     }
 
+    public static IMGHoming fitHoming(RectF win, RectF frame, boolean isJustInner) {
+        IMGHoming dHoming = new IMGHoming(0, 0, 1, 0);
+
+        if (frame.contains(win) && !isJustInner) {
+            // 不需要Fit
+            return dHoming;
+        }
+
+        // 宽高都小于Win，才有必要放大
+        if (isJustInner || frame.width() < win.width() && frame.height() < win.height()) {
+            dHoming.scale = Math.min(win.width() / frame.width(), win.height() / frame.height());
+        }
+
+        RectF rect = new RectF();
+        M.setScale(dHoming.scale, dHoming.scale, frame.centerX(), frame.centerY());
+        M.mapRect(rect, frame);
+
+        if (rect.width() < win.width()) {
+            dHoming.x += win.centerX() - rect.centerX();
+        } else {
+            if (rect.left > win.left) {
+                dHoming.x += win.left - rect.left;
+            } else if (rect.right < win.right) {
+                dHoming.x += win.right - rect.right;
+            }
+        }
+
+        if (rect.height() < win.height()) {
+            dHoming.y += win.centerY() - rect.centerY();
+        } else {
+            if (rect.top > win.top) {
+                dHoming.y += win.top - rect.top;
+            } else if (rect.bottom < win.bottom) {
+                dHoming.y += win.bottom - rect.bottom;
+            }
+        }
+
+        return dHoming;
+    }
+
     public static IMGHoming fillHoming(RectF win, RectF frame) {
         IMGHoming dHoming = new IMGHoming(0, 0, 1, 0);
         if (frame.contains(win)) {

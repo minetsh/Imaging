@@ -118,15 +118,30 @@ public interface IMGClip {
 
         }
 
-        private static float revise(float v, float min, float max) {
+        public static float revise(float v, float min, float max) {
             return Math.min(Math.max(v, min), max);
         }
 
-        private static float[] cohesion(RectF win, float v) {
+        public static float[] cohesion(RectF win, float v) {
             return new float[]{
                     win.left + v, win.right - v,
                     win.top + v, win.bottom - v
             };
+        }
+
+        public static boolean isCohesionContains(RectF frame, float v, float x, float y) {
+            return frame.left + v < x && frame.right - v > x
+                    && frame.top + v < y && frame.bottom - v > y;
+        }
+
+        public static Anchor valueOf(int v) {
+            Anchor[] values = values();
+            for (Anchor anchor : values) {
+                if (anchor.v == v) {
+                    return anchor;
+                }
+            }
+            return null;
         }
     }
 }
