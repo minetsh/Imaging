@@ -1,5 +1,6 @@
 package com.xingren.imaging.view;
 
+import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -29,7 +30,7 @@ import com.xingren.imaging.core.sticker.IMGStickerPortrait;
  */
 
 class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
-        ValueAnimator.AnimatorUpdateListener, IMGStickerPortrait.Callback {
+        ValueAnimator.AnimatorUpdateListener, IMGStickerPortrait.Callback, Animator.AnimatorListener {
 
     private static final String TAG = "IMGDelegate";
 
@@ -193,6 +194,12 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
     void onDraw(Canvas canvas) {
 
+        canvas.save();
+        // TODO 旋转
+
+        RectF clipFrame = mImage.getClipFrame();
+        canvas.rotate(mImage.getRotate(), clipFrame.centerX(), clipFrame.centerY());
+
         // 图片
         mImage.onDrawImage(canvas);
 
@@ -202,6 +209,8 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
             if (mImage.getMode() == IMGMode.MOSAIC && !mPen.isEmpty()) {
                 mDoodlePaint.setStrokeWidth(IMGPath.BASE_MOSAIC_WIDTH);
                 canvas.save();
+                RectF frame = mImage.getClipFrame();
+                canvas.rotate(-mImage.getRotate(), frame.centerX(), frame.centerY());
                 canvas.translate(mView.getScrollX(), mView.getScrollY());
                 canvas.drawPath(mPen.getPath(), mDoodlePaint);
                 canvas.restore();
@@ -215,6 +224,8 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
             mDoodlePaint.setColor(mPen.getColor());
             mDoodlePaint.setStrokeWidth(IMGPath.BASE_DOODLE_WIDTH * mImage.getScale());
             canvas.save();
+            RectF frame = mImage.getClipFrame();
+            canvas.rotate(-mImage.getRotate(), frame.centerX(), frame.centerY());
             canvas.translate(mView.getScrollX(), mView.getScrollY());
             canvas.drawPath(mPen.getPath(), mDoodlePaint);
             canvas.restore();
@@ -222,6 +233,7 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
         // 文字贴片
         mImage.onDrawStickers(canvas);
+        canvas.restore();
 
         // 裁剪
         if (mImage.getMode() == IMGMode.CLIP) {
@@ -230,6 +242,7 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
             mImage.onDrawClipWindow(canvas);
             canvas.restore();
         }
+
     }
 
     private boolean onTouchNONE(MotionEvent event) {
@@ -288,6 +301,7 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
         if (mHomingAnimator == null) {
             mHomingAnimator = new IMGHomingAnimator();
             mHomingAnimator.addUpdateListener(this);
+            mHomingAnimator.addListener(this);
         }
         mHomingAnimator.setObjectValues(sHoming, eHoming);
         mHomingAnimator.start();
@@ -343,7 +357,31 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
     public void onAnimationUpdate(ValueAnimator animation) {
         IMGHoming homing = (IMGHoming) animation.getAnimatedValue();
         mImage.setScale(homing.scale);
+        mImage.setRotate(homing.rotate);
         onScrollTo(homing.x, homing.y);
+        mView.invalidate();
+
+        Log.d(TAG, "Homing=" + homing);
+    }
+
+    @Override
+    public void onAnimationStart(Animator animation) {
+
+    }
+
+    @Override
+    public void onAnimationEnd(Animator animation) {
+        mImage.onHomingEnd();
+    }
+
+    @Override
+    public void onAnimationCancel(Animator animation) {
+
+    }
+
+    @Override
+    public void onAnimationRepeat(Animator animation) {
+
     }
 
     private class MoveAdapter extends GestureDetector.SimpleOnGestureListener {
@@ -401,6 +439,18 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
     void cancelClip() {
         setMode(mPreMode);
+    }
+
+    void resetClip() {
+        mImage.resetClip();
+        onHoming();
+    }
+
+    void doRotate() {
+        if (!isHoming()) {
+            mImage.rotate(-90);
+            onHoming();
+        }
     }
 
     void doClip() {

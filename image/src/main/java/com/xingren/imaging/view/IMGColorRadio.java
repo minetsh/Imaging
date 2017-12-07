@@ -85,6 +85,8 @@ public class IMGColorRadio extends RadioButton implements ValueAnimator.Animator
 
     @Override
     public void draw(Canvas canvas) {
+        super.draw(canvas);
+
         float hw = getWidth() / 2f, hh = getHeight() / 2f;
         float radius = Math.min(hw, hh);
 

@@ -2,6 +2,7 @@ package com.xingren.imaging;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.RadioGroup;
@@ -16,8 +17,9 @@ import com.xingren.imaging.view.IMGView;
  * Created by felix on 2017/12/5 下午3:08.
  */
 
-public class IMGEditBaseActivity extends Activity implements View.OnClickListener,
-        IMGTextEditDialog.Callback, RadioGroup.OnCheckedChangeListener, DialogInterface.OnShowListener, DialogInterface.OnDismissListener {
+public abstract class IMGEditBaseActivity extends Activity implements View.OnClickListener,
+        IMGTextEditDialog.Callback, RadioGroup.OnCheckedChangeListener,
+        DialogInterface.OnShowListener, DialogInterface.OnDismissListener {
 
     protected IMGView mImgView;
 
@@ -27,7 +29,7 @@ public class IMGEditBaseActivity extends Activity implements View.OnClickListene
 
     private IMGTextEditDialog mTextDialog;
 
-    private View mLayoutOpAll, mLayoutOpSub;
+    private View mLayoutOpSub;
 
     private ViewSwitcher mOpSwitcher, mOpSubSwitcher;
 
@@ -44,8 +46,12 @@ public class IMGEditBaseActivity extends Activity implements View.OnClickListene
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.image_edit_activity);
-        initViews();
+        Bitmap bitmap = getBitmap();
+        if (bitmap != null) {
+            setContentView(R.layout.image_edit_activity);
+            initViews();
+            mImgView.setImageBitmap(bitmap);
+        } else finish();
     }
 
     private void initViews() {
@@ -59,7 +65,6 @@ public class IMGEditBaseActivity extends Activity implements View.OnClickListene
         mColorGroup.setOnCheckedChangeListener(this);
 
         mLayoutOpSub = findViewById(R.id.layout_op_sub);
-        mLayoutOpAll = findViewById(R.id.layout_op_all);
     }
 
     @Override
@@ -85,6 +90,8 @@ public class IMGEditBaseActivity extends Activity implements View.OnClickListene
             onDoneClipClick();
         } else if (vid == R.id.tv_clip_reset) {
             onResetClipClick();
+        } else if (vid == R.id.ib_clip_rotate) {
+            onRotateClipClick();
         }
     }
 
@@ -106,10 +113,6 @@ public class IMGEditBaseActivity extends Activity implements View.OnClickListene
         }
     }
 
-    public void onModeClick(IMGMode mode) {
-
-    }
-
     public void onTextModeClick() {
         if (mTextDialog == null) {
             mTextDialog = new IMGTextEditDialog(this, this);
@@ -119,42 +122,9 @@ public class IMGEditBaseActivity extends Activity implements View.OnClickListene
         mTextDialog.show();
     }
 
-    public void onUndoClick() {
-
-    }
-
-    public void onCancelClick() {
-
-    }
-
-    public void onDoneClick() {
-
-    }
-
-    public void onCancelClipClick() {
-
-    }
-
-    public void onDoneClipClick() {
-
-    }
-
-    public void onResetClipClick() {
-
-    }
-
     @Override
     public final void onCheckedChanged(RadioGroup group, int checkedId) {
         onColorChanged(mColorGroup.getCheckColor());
-    }
-
-    public void onColorChanged(int checkedColor) {
-        mImgView.setPenColor(checkedColor);
-    }
-
-    @Override
-    public void onText(IMGText text) {
-
     }
 
     public void setOpDisplay(int op) {
@@ -174,11 +144,34 @@ public class IMGEditBaseActivity extends Activity implements View.OnClickListene
 
     @Override
     public void onShow(DialogInterface dialog) {
-        mLayoutOpAll.setVisibility(View.GONE);
+        mOpSwitcher.setVisibility(View.GONE);
     }
-
+    
     @Override
     public void onDismiss(DialogInterface dialog) {
-        mLayoutOpAll.setVisibility(View.VISIBLE);
+        mOpSwitcher.setVisibility(View.VISIBLE);
     }
+
+    public abstract Bitmap getBitmap();
+
+    public abstract void onModeClick(IMGMode mode);
+
+    public abstract void onUndoClick();
+
+    public abstract void onCancelClick();
+
+    public abstract void onDoneClick();
+
+    public abstract void onCancelClipClick();
+
+    public abstract void onDoneClipClick();
+
+    public abstract void onResetClipClick();
+
+    public abstract void onRotateClipClick();
+
+    public abstract void onColorChanged(int checkedColor);
+
+    @Override
+    public abstract void onText(IMGText text);
 }

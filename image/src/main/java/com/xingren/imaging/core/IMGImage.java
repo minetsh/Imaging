@@ -10,6 +10,7 @@ import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
+import android.util.Log;
 
 import com.xingren.imaging.core.clip.IMGClip;
 import com.xingren.imaging.core.clip.IMGClipWindow;
@@ -39,6 +40,8 @@ public class IMGImage {
      * 裁剪图片边框（显示的图片区域）
      */
     private RectF mClipFrame = new RectF();
+
+    private float mRotate = 0, mTargetRotate = 0;
 
     /**
      * 图片显示窗口（默认为控件大小，裁剪时为裁剪区域）
@@ -149,7 +152,7 @@ public class IMGImage {
         if (mMode == IMGMode.MOSAIC) {
             makeMosaicBitmap();
         } else if (mMode == IMGMode.CLIP) {
-            mClipWin.reset(mClipFrame.width(), mClipFrame.height());
+            mClipWin.reset(mClipFrame, getTargetRotate());
         }
     }
 
@@ -180,7 +183,18 @@ public class IMGImage {
     public void clip(float sx, float sy) {
         RectF frame = new RectF(mClipWin.getFrame());
         frame.offset(sx, sy);
+
+        M.setRotate(-getRotate(), mClipFrame.centerX(), mClipFrame.centerY());
+        M.mapRect(frame);
+
         mClipFrame.set(frame);
+    }
+
+    public void resetClip() {
+        // TODO 就近旋转
+        setTargetRotate(getRotate() - getRotate() % 360);
+        mClipFrame.set(mFrame);
+        mClipWin.reset(mClipFrame, getTargetRotate());
     }
 
     private void makeMosaicBitmap() {
@@ -212,7 +226,7 @@ public class IMGImage {
         onWindowChanged(mWindow.width(), mWindow.height());
 
         if (mMode == IMGMode.CLIP) {
-            mClipWin.reset(mClipFrame.width(), mClipFrame.height());
+            mClipWin.reset(mClipFrame, getTargetRotate());
         }
     }
 
@@ -221,25 +235,30 @@ public class IMGImage {
     }
 
     public IMGHoming getStartHoming(float scrollX, float scrollY) {
-        return new IMGHoming(scrollX, scrollY, getScale());
+        return new IMGHoming(scrollX, scrollY, getScale(), getRotate());
     }
 
     public IMGHoming getEndHoming(float scrollX, float scrollY) {
-        IMGHoming homing = new IMGHoming(scrollX, scrollY, getScale());
+        IMGHoming homing = new IMGHoming(scrollX, scrollY, getScale(), getTargetRotate());
+
+        RectF clipFrame = new RectF();
+        M.setRotate(getTargetRotate(), mClipFrame.centerX(), mClipFrame.centerY());
+        M.mapRect(clipFrame, mClipFrame);
+
         if (mMode == IMGMode.CLIP) {
             RectF frame = new RectF(mClipWin.getFrame());
             frame.offset(scrollX, scrollY);
             if (!mClipWin.isClipping()) {
-                homing.ccat(IMGUtils.fill(frame, mClipFrame));
+                homing.rConcat(IMGUtils.fill(frame, clipFrame));
                 // 开启裁剪模式
                 mClipWin.setClipping(true);
             } else {
-                homing.ccat(IMGUtils.fillHoming(frame, mClipFrame));
+                homing.rConcat(IMGUtils.fillHoming(frame, mFrame));
             }
         } else {
             RectF win = new RectF(mWindow);
             win.offset(scrollX, scrollY);
-            homing.ccat(IMGUtils.fitHoming(win, mClipFrame));
+            homing.rConcat(IMGUtils.fitHoming(win, clipFrame));
         }
 
         return homing;
@@ -255,7 +274,10 @@ public class IMGImage {
         if (path == null) return;
 
         float scale = 1f / getScale();
-        M.setTranslate(sx - mClipFrame.left, sy - mClipFrame.top);
+
+        M.setTranslate(sx, sy);
+        M.postRotate(-getRotate(), mClipFrame.centerX(), mClipFrame.centerY());
+        M.postTranslate(-mFrame.left, -mFrame.top);
         M.postScale(scale, scale);
         path.transform(M);
 
@@ -366,7 +388,7 @@ public class IMGImage {
 
     private void onInitialHomingDone() {
         if (mMode == IMGMode.CLIP) {
-            mClipWin.reset(mClipFrame.width(), mClipFrame.height());
+            mClipWin.reset(mClipFrame, getTargetRotate());
         }
     }
 
@@ -380,13 +402,12 @@ public class IMGImage {
     }
 
     public int onDrawMosaicsPath(Canvas canvas) {
-        int layerCount = canvas.saveLayer(mClipFrame.left, mClipFrame.top,
-                mClipFrame.right, mClipFrame.bottom, null, Canvas.ALL_SAVE_FLAG);
+        int layerCount = canvas.saveLayer(mFrame, null, Canvas.ALL_SAVE_FLAG);
 
         if (!isMosaicEmpty()) {
             canvas.save();
             float scale = getScale();
-            canvas.translate(mClipFrame.left, mClipFrame.top);
+            canvas.translate(mFrame.left, mFrame.top);
             canvas.scale(scale, scale);
             for (IMGPath path : mMosaics) {
                 path.onDrawMosaic(canvas, mPaint);
@@ -406,7 +427,7 @@ public class IMGImage {
         if (!isDoodleEmpty()) {
             canvas.save();
             float scale = getScale();
-            canvas.translate(mClipFrame.left, mClipFrame.top);
+            canvas.translate(mFrame.left, mFrame.top);
             canvas.scale(scale, scale);
 
             for (IMGPath path : mDoodles) {
@@ -415,7 +436,7 @@ public class IMGImage {
             canvas.restore();
         }
     }
-    
+
     public void onDrawStickers(Canvas canvas) {
         for (IMGSticker sticker : mBackStickers) {
             if (!sticker.isShowing()) {
@@ -436,6 +457,7 @@ public class IMGImage {
     public void onDrawClipWindow(Canvas canvas) {
         if (mMode == IMGMode.CLIP) {
             mClipWin.onDraw(canvas);
+
         }
     }
 
@@ -470,6 +492,30 @@ public class IMGImage {
             }
         }
         return false;
+    }
+
+    public float getTargetRotate() {
+        return mTargetRotate;
+    }
+
+    public void setTargetRotate(float targetRotate) {
+        this.mTargetRotate = targetRotate;
+    }
+
+    /**
+     * 在当前基础上旋转
+     */
+    public void rotate(int rotate) {
+        mTargetRotate = Math.round((mRotate + rotate) / 90f) * 90;
+        mClipWin.reset(mClipFrame, getTargetRotate());
+    }
+
+    public float getRotate() {
+        return mRotate;
+    }
+
+    public void setRotate(float rotate) {
+        mRotate = rotate;
     }
 
     public float getScale() {
@@ -511,6 +557,18 @@ public class IMGImage {
 
     public void onScaleEnd() {
 
+    }
+
+    public void onHomingStart() {
+        Log.d(TAG, "Homing begin");
+    }
+
+    public void onHomingEnd() {
+        Log.d(TAG, "Homing end");
+    }
+
+    public void onHomingCancel() {
+        Log.d(TAG, "Homing cancel");
     }
 
     @Override

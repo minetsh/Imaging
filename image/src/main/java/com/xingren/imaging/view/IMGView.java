@@ -49,11 +49,11 @@ public class IMGView extends FrameLayout {
     }
 
     public void doRotate() {
-        // TODO
+        mDelegate.doRotate();
     }
 
     public void resetClip() {
-        // TODO
+        mDelegate.resetClip();
     }
 
     public void doClip() {

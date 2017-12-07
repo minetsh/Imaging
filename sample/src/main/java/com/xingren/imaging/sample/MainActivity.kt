@@ -10,15 +10,20 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
-    val REQ_EDIT_IMAGE = 1
+    private val REQ_EDIT_IMAGE = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         btn_edit.setOnClickListener {
-            startActivityForResult(Intent(this, IMGEditActivity::class.java), REQ_EDIT_IMAGE)
+
+            val intent = Intent(this, IMGEditActivity::class.java)
+            intent.putExtra(IMGEditActivity.EXTRA_IMAGE_PATH, "/android_asset/g.jpeg")
+            startActivityForResult(intent, REQ_EDIT_IMAGE)
         }
+
+        btn_edit.performClick()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

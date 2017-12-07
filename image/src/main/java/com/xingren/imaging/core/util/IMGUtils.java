@@ -60,7 +60,7 @@ public class IMGUtils {
     }
 
     public static IMGHoming fitHoming(RectF win, RectF frame) {
-        IMGHoming dHoming = new IMGHoming(0, 0, 1f);
+        IMGHoming dHoming = new IMGHoming(0, 0, 1, 0);
 
         if (frame.contains(win)) {
             // 不需要Fit
@@ -100,7 +100,7 @@ public class IMGUtils {
     }
 
     public static IMGHoming fillHoming(RectF win, RectF frame) {
-        IMGHoming dHoming = new IMGHoming(0, 0, 1f);
+        IMGHoming dHoming = new IMGHoming(0, 0, 1, 0);
         if (frame.contains(win)) {
             // 不需要Fill
             return dHoming;
@@ -130,7 +130,7 @@ public class IMGUtils {
     }
 
     public static IMGHoming fill(RectF win, RectF frame) {
-        IMGHoming dHoming = new IMGHoming(0, 0, 1f);
+        IMGHoming dHoming = new IMGHoming(0, 0, 1, 0);
 
         if (win.equals(frame)) {
             return dHoming;
@@ -147,5 +147,19 @@ public class IMGUtils {
         dHoming.y += win.centerY() - rect.centerY();
 
         return dHoming;
+    }
+
+    public static int inSampleSize(int rawSampleSize) {
+        int raw = rawSampleSize, ans = 1;
+        while (raw > 1) {
+            ans <<= 1;
+            raw >>= 1;
+        }
+
+        if (ans != rawSampleSize) {
+            ans <<= 1;
+        }
+
+        return ans;
     }
 }

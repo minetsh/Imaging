@@ -10,20 +10,20 @@ public class IMGHoming {
 
     public float scale;
 
-    public IMGHoming() {
+    public float rotate;
 
-    }
-
-    public IMGHoming(float x, float y, float scale) {
+    public IMGHoming(float x, float y, float scale, float rotate) {
         this.x = x;
         this.y = y;
         this.scale = scale;
+        this.rotate = rotate;
     }
 
-    public void set(float x, float y, float scale) {
+    public void set(float x, float y, float scale, float rotate) {
         this.x = x;
         this.y = y;
         this.scale = scale;
+        this.rotate = rotate;
     }
 
     public void concat(IMGHoming homing) {
@@ -32,7 +32,7 @@ public class IMGHoming {
         this.y += homing.y;
     }
 
-    public void ccat(IMGHoming homing) {
+    public void rConcat(IMGHoming homing) {
         this.scale *= homing.scale;
         this.x -= homing.x;
         this.y -= homing.y;
@@ -44,6 +44,7 @@ public class IMGHoming {
                 "x=" + x +
                 ", y=" + y +
                 ", scale=" + scale +
+                ", rotate=" + rotate +
                 '}';
     }
 }

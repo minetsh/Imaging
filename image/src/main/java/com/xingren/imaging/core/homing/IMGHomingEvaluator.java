@@ -23,11 +23,12 @@ public class IMGHomingEvaluator implements TypeEvaluator<IMGHoming> {
         float x = startValue.x + fraction * (endValue.x - startValue.x);
         float y = startValue.y + fraction * (endValue.y - startValue.y);
         float scale = startValue.scale + fraction * (endValue.scale - startValue.scale);
+        float rotate = startValue.rotate + fraction * (endValue.rotate - startValue.rotate);
 
         if (homing == null) {
-            homing = new IMGHoming(x, y, scale);
+            homing = new IMGHoming(x, y, scale, rotate);
         } else {
-            homing.set(x, y, scale);
+            homing.set(x, y, scale, rotate);
         }
 
         return homing;

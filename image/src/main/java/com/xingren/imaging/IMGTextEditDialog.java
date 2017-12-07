@@ -57,20 +57,18 @@ public class IMGTextEditDialog extends Dialog implements View.OnClickListener,
     protected void onStart() {
         super.onStart();
         if (mDefaultText != null) {
-            setText(mDefaultText);
+            mEditText.setText(mDefaultText.getText());
+            mEditText.setTextColor(mDefaultText.getColor());
+            if (!mDefaultText.isEmpty()) {
+                mEditText.setSelection(mEditText.length());
+            }
             mDefaultText = null;
         } else mEditText.setText("");
         mColorGroup.setCheckColor(mEditText.getCurrentTextColor());
     }
 
     public void setText(IMGText text) {
-        if (mEditText != null) {
-            mEditText.setText(text.getText());
-            mEditText.setTextColor(text.getColor());
-            if (!text.isEmpty()) {
-                mEditText.setSelection(mEditText.length());
-            }
-        } else mDefaultText = text;
+        mDefaultText = text;
     }
 
     public void reset() {
