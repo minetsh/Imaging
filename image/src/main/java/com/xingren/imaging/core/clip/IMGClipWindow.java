@@ -20,6 +20,10 @@ public class IMGClipWindow implements IMGClip {
      */
     private RectF mFrame = new RectF();
 
+    private RectF mBaseFrame = new RectF();
+
+    private RectF mTargetFrame = new RectF();
+
     /**
      * 裁剪窗口
      */
@@ -39,6 +43,8 @@ public class IMGClipWindow implements IMGClip {
     private boolean isClipping = false;
 
     private boolean isShowShade = false;
+
+    private boolean isHoming = false;
 
     private Matrix M = new Matrix();
 
@@ -80,6 +86,7 @@ public class IMGClipWindow implements IMGClip {
 
         if (!mFrame.isEmpty()) {
             IMGUtils.center(mWinFrame, mFrame);
+            mTargetFrame.set(mFrame);
         }
     }
 
@@ -93,11 +100,37 @@ public class IMGClipWindow implements IMGClip {
     /**
      * 重置裁剪
      */
-    private void reset(float imgWidth, float imgHeight) {
+    private void reset(float clipWidth, float clipHeight) {
         setClipping(false);
-        mFrame.set(0, 0, imgWidth, imgHeight);
+        mFrame.set(0, 0, clipWidth, clipHeight);
         IMGUtils.fitCenter(mWinFrame, mFrame, CLIP_MARGIN);
+        mTargetFrame.set(mFrame);
+    }
 
+    public boolean homing() {
+        mBaseFrame.set(mFrame);
+        mTargetFrame.set(mFrame);
+        IMGUtils.fitCenter(mWinFrame, mTargetFrame, CLIP_MARGIN);
+        return isHoming = !mTargetFrame.equals(mBaseFrame);
+    }
+
+    public void homing(float fraction) {
+        if (isHoming) {
+            mFrame.set(
+                    mBaseFrame.left + (mTargetFrame.left - mBaseFrame.left) * fraction,
+                    mBaseFrame.top + (mTargetFrame.top - mBaseFrame.top) * fraction,
+                    mBaseFrame.right + (mTargetFrame.right - mBaseFrame.right) * fraction,
+                    mBaseFrame.bottom + (mTargetFrame.bottom - mBaseFrame.bottom) * fraction
+            );
+        }
+    }
+
+    public boolean isHoming() {
+        return isHoming;
+    }
+
+    public void setHoming(boolean homing) {
+        isHoming = homing;
     }
 
     public boolean isClipping() {
@@ -110,6 +143,31 @@ public class IMGClipWindow implements IMGClip {
 
     public RectF getFrame() {
         return mFrame;
+    }
+
+    public RectF getWinFrame( ) {
+        return mWinFrame;
+    }
+
+    public boolean isInCenter() {
+        // TODO
+        return false;
+    }
+
+    public RectF getOffsetFrame(float offsetX, float offsetY) {
+        RectF frame = new RectF(mFrame);
+        frame.offset(offsetX, offsetY);
+        return frame;
+    }
+
+    public RectF getTargetFrame() {
+        return mTargetFrame;
+    }
+
+    public RectF getOffsetTargetFrame(float offsetX, float offsetY) {
+        RectF targetFrame = new RectF(mFrame);
+        targetFrame.offset(offsetX, offsetY);
+        return targetFrame;
     }
 
     public boolean isShowShade() {
@@ -189,7 +247,12 @@ public class IMGClipWindow implements IMGClip {
                     v |= 1 << i;
                 }
             }
-            return Anchor.valueOf(v);
+
+            Anchor anchor = Anchor.valueOf(v);
+            if (anchor != null) {
+                isHoming = false;
+            }
+            return anchor;
         }
         return null;
     }

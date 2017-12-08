@@ -160,7 +160,6 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
     }
 
     boolean onTouch(MotionEvent event) {
-        Log.d(TAG, "PointerCount=" + event.getPointerCount());
 
         if (isHoming()) {
             // Homing
@@ -183,13 +182,25 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
         }
 
         switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                mImage.onTouchDown(event.getX(), event.getY());
+                break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+                mImage.onTouchUp(mView.getScrollX(), mView.getScrollY());
                 onHoming();
                 break;
         }
 
         return handled;
+    }
+
+    void onSteady() {
+        if (isHoming()) {
+            stopHoming();
+        }
+        mImage.onSteady(mView.getScrollX(), mView.getScrollY());
+        onHoming();
     }
 
     void onDraw(Canvas canvas) {
@@ -198,6 +209,7 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
         // TODO 旋转
 
         RectF clipFrame = mImage.getClipFrame();
+
         canvas.rotate(mImage.getRotate(), clipFrame.centerX(), clipFrame.centerY());
 
         // 图片
@@ -252,7 +264,6 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
     private boolean onTouchPath(MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                mImage.onTouchDown(event.getX(), event.getY());
                 return onPathBegin(event);
             case MotionEvent.ACTION_MOVE:
                 return onPathMove(event);
@@ -308,11 +319,13 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
     }
 
     private boolean onScroll(float dx, float dy) {
-        if (!mImage.onScroll(-dx, -dy)) {
-            return onScrollTo(mView.getScrollX() + Math.round(dx), mView.getScrollY() + Math.round(dy));
+        IMGHoming homing = mImage.onScroll(mView.getScrollX(), mView.getScrollY(), -dx, -dy);
+        if (homing != null) {
+            mView.invalidate();
+//            applyHoming(homing);
+            return true;
         }
-        mView.invalidate();
-        return true;
+        return onScrollTo(mView.getScrollX() + Math.round(dx), mView.getScrollY() + Math.round(dy));
     }
 
     private boolean onScrollTo(int x, int y) {
@@ -358,7 +371,15 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
     @Override
     public void onAnimationUpdate(ValueAnimator animation) {
+        mImage.onHoming(animation.getAnimatedFraction());
+
         IMGHoming homing = (IMGHoming) animation.getAnimatedValue();
+        Log.d(TAG, "Homing=" + homing);
+
+        applyHoming(homing);
+    }
+
+    private void applyHoming(IMGHoming homing) {
         mImage.setScale(homing.scale);
         mImage.setRotate(homing.rotate);
         if (!onScrollTo(Math.round(homing.x), Math.round(homing.y))) {
@@ -373,7 +394,10 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
     @Override
     public void onAnimationEnd(Animator animation) {
-        mImage.onHomingEnd(mHomingAnimator.isRotate());
+        if (mImage.onHomingEnd(mView.getScrollX(), mView.getScrollY(), mHomingAnimator.isRotate())) {
+
+            applyHoming(mImage.clip(mView.getScrollX(), mView.getScrollY()));
+        }
     }
 
     @Override
@@ -390,7 +414,6 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
         @Override
         public boolean onDown(MotionEvent e) {
-            mImage.onTouchDown(e.getX(), e.getY());
             return true;
         }
 

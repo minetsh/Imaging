@@ -3,7 +3,9 @@ package com.xingren.imaging.view;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -17,7 +19,7 @@ import com.xingren.imaging.core.sticker.IMGSticker;
  * Created by felix on 2017/11/14 下午6:43.
  */
 // TODO clip外不加入path
-public class IMGView extends FrameLayout {
+public class IMGView extends FrameLayout implements Runnable {
 
     private static final String TAG = "IMGView";
 
@@ -138,7 +140,29 @@ public class IMGView extends FrameLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                removeCallbacks(this);
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                Log.d(TAG, "POST1=" + SystemClock.uptimeMillis());
+                postDelayed(this, 2000);
+                break;
+        }
         return mDelegate.onTouch(event);
+    }
+
+    @Override
+    public void run() {
+        Log.d(TAG, "POST2=" + SystemClock.uptimeMillis());
+        mDelegate.onSteady();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        removeCallbacks(this);
     }
 
     public interface IMGEventCallback {
