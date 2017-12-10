@@ -29,7 +29,7 @@ public class IMGClipWindow implements IMGClip {
      */
     private RectF mWinFrame = new RectF();
 
-    private float mWinWidth, mWinHeight;
+    private RectF mWin = new RectF();
 
     private float[] mCells = new float[16];
 
@@ -41,6 +41,8 @@ public class IMGClipWindow implements IMGClip {
      * 是否在裁剪中
      */
     private boolean isClipping = false;
+
+    private boolean isResetting = true;
 
     private boolean isShowShade = false;
 
@@ -63,11 +65,9 @@ public class IMGClipWindow implements IMGClip {
 
     private static final int COLOR_CORNER = Color.WHITE;
 
-    private static final int COLOR_SHADE = 0xAA000000;
+    private static final int COLOR_SHADE = 0xCC000000;
 
     {
-        mShadePath.setFillType(Path.FillType.EVEN_ODD);
-
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeCap(Paint.Cap.SQUARE);
     }
@@ -80,8 +80,7 @@ public class IMGClipWindow implements IMGClip {
      * 计算裁剪窗口区域
      */
     public void setClipWinSize(float width, float height) {
-        mWinWidth = width;
-        mWinHeight = height;
+        mWin.set(0, 0, width, height);
         mWinFrame.set(0, 0, width, height * VERTICAL_RATIO);
 
         if (!mFrame.isEmpty()) {
@@ -101,7 +100,7 @@ public class IMGClipWindow implements IMGClip {
      * 重置裁剪
      */
     private void reset(float clipWidth, float clipHeight) {
-        setClipping(false);
+        setResetting(true);
         mFrame.set(0, 0, clipWidth, clipHeight);
         IMGUtils.fitCenter(mWinFrame, mFrame, CLIP_MARGIN);
         mTargetFrame.set(mFrame);
@@ -141,17 +140,20 @@ public class IMGClipWindow implements IMGClip {
         isClipping = clipping;
     }
 
+    public boolean isResetting() {
+        return isResetting;
+    }
+
+    public void setResetting(boolean resetting) {
+        isResetting = resetting;
+    }
+
     public RectF getFrame() {
         return mFrame;
     }
 
-    public RectF getWinFrame( ) {
+    public RectF getWinFrame() {
         return mWinFrame;
-    }
-
-    public boolean isInCenter() {
-        // TODO
-        return false;
     }
 
     public RectF getOffsetFrame(float offsetX, float offsetY) {
@@ -179,6 +181,11 @@ public class IMGClipWindow implements IMGClip {
     }
 
     public void onDraw(Canvas canvas) {
+
+        if (isResetting) {
+            return;
+        }
+
         float[] size = {mFrame.width(), mFrame.height()};
         for (int i = 0; i < mBaseSizes.length; i++) {
             for (int j = 0; j < mBaseSizes[i].length; j++) {
@@ -194,8 +201,6 @@ public class IMGClipWindow implements IMGClip {
             mCorners[i] = mBaseSizes[i & 1][CLIP_CORNER_STRIDES >>> i & 1]
                     + CLIP_CORNER_SIZES[CLIP_CORNERS[i] & 3] + CLIP_CORNER_STEPS[CLIP_CORNERS[i] >> 2];
         }
-
-        onDrawShade(canvas);
 
         canvas.translate(mFrame.left, mFrame.top);
         mPaint.setStyle(Paint.Style.STROKE);
@@ -214,22 +219,14 @@ public class IMGClipWindow implements IMGClip {
         canvas.drawLines(mCorners, mPaint);
     }
 
-    private void onDrawShade(Canvas canvas) {
+    public void onDrawShade(Canvas canvas) {
         if (!isShowShade) return;
 
         // 计算遮罩图形
         mShadePath.reset();
-        mShadePath.moveTo(0, 0);
-        mShadePath.lineTo(mWinWidth, 0);
-        mShadePath.lineTo(mWinWidth, mWinHeight);
-        mShadePath.lineTo(0, mWinHeight);
-        mShadePath.lineTo(0, 0);
 
-        mShadePath.moveTo(mFrame.left, mFrame.top);
-        mShadePath.lineTo(mFrame.right, mFrame.top);
-        mShadePath.lineTo(mFrame.right, mFrame.bottom);
-        mShadePath.lineTo(mFrame.left, mFrame.bottom);
-        mShadePath.lineTo(mFrame.left, mFrame.top);
+        mShadePath.setFillType(Path.FillType.WINDING);
+        mShadePath.addRect(mFrame.left + 100, mFrame.top + 100, mFrame.right - 100, mFrame.bottom - 100, Path.Direction.CW);
 
         mPaint.setColor(COLOR_SHADE);
         mPaint.setStyle(Paint.Style.FILL);
@@ -258,6 +255,6 @@ public class IMGClipWindow implements IMGClip {
     }
 
     public void onScroll(Anchor anchor, float dx, float dy) {
-        anchor.d(mWinFrame, mFrame, dx, dy);
+        anchor.move(mWinFrame, mFrame, dx, dy);
     }
 }

@@ -3,9 +3,7 @@ package com.xingren.imaging.view;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.os.SystemClock;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -146,8 +144,7 @@ public class IMGView extends FrameLayout implements Runnable {
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                Log.d(TAG, "POST1=" + SystemClock.uptimeMillis());
-                postDelayed(this, 2000);
+                postDelayed(this, 1200);
                 break;
         }
         return mDelegate.onTouch(event);
@@ -155,8 +152,10 @@ public class IMGView extends FrameLayout implements Runnable {
 
     @Override
     public void run() {
-        Log.d(TAG, "POST2=" + SystemClock.uptimeMillis());
-        mDelegate.onSteady();
+        // 稳定触发
+        if (!mDelegate.onSteady()) {
+            postDelayed(this, 500);
+        }
     }
 
     @Override

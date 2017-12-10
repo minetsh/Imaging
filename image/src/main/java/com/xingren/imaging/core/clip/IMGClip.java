@@ -62,7 +62,6 @@ public interface IMGClip {
             0x8, 0x9, 0x8, 0x8
     };
 
-    // TODO
     enum Anchor {
         LEFT(1),
         RIGHT(2),
@@ -76,10 +75,10 @@ public interface IMGClip {
         int v;
 
         /**
-         * left: 0
-         * top: 2
-         * right: 1
-         * bottom 3
+         * LEFT: 0
+         * TOP: 2
+         * RIGHT: 1
+         * BOTTOM: 3
          */
 
         final static int P = 0, N = 1;
@@ -92,30 +91,23 @@ public interface IMGClip {
             this.v = v;
         }
 
-        public void d(RectF win, RectF frame, float dx, float dy) {
-            float[] ow = cohesion(win, CLIP_MARGIN);
-            float[] iw = cohesion(frame, CLIP_FRAME_MIN);
-            float[] fw = cohesion(frame, 0);
+        public void move(RectF win, RectF frame, float dx, float dy) {
+            float[] maxFrame = cohesion(win, CLIP_MARGIN);
+            float[] minFrame = cohesion(frame, CLIP_FRAME_MIN);
+            float[] theFrame = cohesion(frame, 0);
 
             float[] dxy = {dx, 0, dy};
-
             for (int i = 0; i < 4; i++) {
                 if (((1 << i) & v) != 0) {
 
                     int pn = PN[i & 1];
 
-                    // TODO
-                    fw[i] = pn * revise(pn * (fw[i] + dxy[i & 2]), pn * ow[i], pn * iw[i + PN[i & 1]]);
-
-
+                    theFrame[i] = pn * revise(pn * (theFrame[i] + dxy[i & 2]),
+                            pn * maxFrame[i], pn * minFrame[i + PN[i & 1]]);
                 }
             }
 
-            frame.left = fw[0];
-            frame.top = fw[2];
-            frame.right = fw[1];
-            frame.bottom = fw[3];
-
+            frame.set(theFrame[0], theFrame[2], theFrame[1], theFrame[3]);
         }
 
         public static float revise(float v, float min, float max) {

@@ -54,6 +54,8 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
     private Paint mMosaicPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
+    private static final boolean DEBUG = true;
+
     {
         // 涂鸦画刷
         mDoodlePaint.setStyle(Paint.Style.STROKE);
@@ -195,21 +197,23 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
         return handled;
     }
 
-    void onSteady() {
-        if (isHoming()) {
-            stopHoming();
+    boolean onSteady() {
+        if (DEBUG) {
+            Log.d(TAG, "onSteady: isHoming=" + isHoming());
         }
-        mImage.onSteady(mView.getScrollX(), mView.getScrollY());
-        onHoming();
+        if (!isHoming()) {
+            mImage.onSteady(mView.getScrollX(), mView.getScrollY());
+            onHoming();
+            return true;
+        }
+        return false;
     }
 
     void onDraw(Canvas canvas) {
-
         canvas.save();
-        // TODO 旋转
 
+        // clip 中心旋转
         RectF clipFrame = mImage.getClipFrame();
-
         canvas.rotate(mImage.getRotate(), clipFrame.centerX(), clipFrame.centerY());
 
         // 图片
@@ -245,16 +249,18 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
         // 文字贴片
         mImage.onDrawStickers(canvas);
+
+        mImage.onDrawShade(canvas);
+
         canvas.restore();
 
         // 裁剪
         if (mImage.getMode() == IMGMode.CLIP) {
             canvas.save();
             canvas.translate(mView.getScrollX(), mView.getScrollY());
-            mImage.onDrawClip(canvas);
+            mImage.onDrawClip(canvas, mView.getScrollX(), mView.getScrollY());
             canvas.restore();
         }
-
     }
 
     private boolean onTouchNONE(MotionEvent event) {
@@ -321,8 +327,8 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
     private boolean onScroll(float dx, float dy) {
         IMGHoming homing = mImage.onScroll(mView.getScrollX(), mView.getScrollY(), -dx, -dy);
         if (homing != null) {
-            mView.invalidate();
-//            applyHoming(homing);
+//            mView.invalidate();
+            toApplyHoming(homing);
             return true;
         }
         return onScrollTo(mView.getScrollX() + Math.round(dx), mView.getScrollY() + Math.round(dy));
@@ -351,7 +357,6 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
             mImage.onScale(detector.getScaleFactor(),
                     mView.getScrollX() + detector.getFocusX(),
                     mView.getScrollY() + detector.getFocusY());
-
             mView.invalidate();
             return true;
         }
@@ -372,14 +377,10 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
     @Override
     public void onAnimationUpdate(ValueAnimator animation) {
         mImage.onHoming(animation.getAnimatedFraction());
-
-        IMGHoming homing = (IMGHoming) animation.getAnimatedValue();
-        Log.d(TAG, "Homing=" + homing);
-
-        applyHoming(homing);
+        toApplyHoming((IMGHoming) animation.getAnimatedValue());
     }
 
-    private void applyHoming(IMGHoming homing) {
+    private void toApplyHoming(IMGHoming homing) {
         mImage.setScale(homing.scale);
         mImage.setRotate(homing.rotate);
         if (!onScrollTo(Math.round(homing.x), Math.round(homing.y))) {
@@ -389,25 +390,33 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
     @Override
     public void onAnimationStart(Animator animation) {
+        if (DEBUG) {
+            Log.d(TAG, "onAnimationStart");
+        }
         mImage.onHomingStart(mHomingAnimator.isRotate());
     }
 
     @Override
     public void onAnimationEnd(Animator animation) {
+        if (DEBUG) {
+            Log.d(TAG, "onAnimationEnd");
+        }
         if (mImage.onHomingEnd(mView.getScrollX(), mView.getScrollY(), mHomingAnimator.isRotate())) {
-
-            applyHoming(mImage.clip(mView.getScrollX(), mView.getScrollY()));
+            toApplyHoming(mImage.clip(mView.getScrollX(), mView.getScrollY()));
         }
     }
 
     @Override
     public void onAnimationCancel(Animator animation) {
+        if (DEBUG) {
+            Log.d(TAG, "onAnimationCancel");
+        }
         mImage.onHomingCancel(mHomingAnimator.isRotate());
     }
 
     @Override
     public void onAnimationRepeat(Animator animation) {
-
+        // need not implement.
     }
 
     private class MoveAdapter extends GestureDetector.SimpleOnGestureListener {
