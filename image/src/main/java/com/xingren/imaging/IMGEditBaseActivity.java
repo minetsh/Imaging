@@ -17,7 +17,7 @@ import com.xingren.imaging.view.IMGView;
  * Created by felix on 2017/12/5 下午3:08.
  */
 
-public abstract class IMGEditBaseActivity extends Activity implements View.OnClickListener,
+abstract class IMGEditBaseActivity extends Activity implements View.OnClickListener,
         IMGTextEditDialog.Callback, RadioGroup.OnCheckedChangeListener,
         DialogInterface.OnShowListener, DialogInterface.OnDismissListener {
 
@@ -146,7 +146,7 @@ public abstract class IMGEditBaseActivity extends Activity implements View.OnCli
     public void onShow(DialogInterface dialog) {
         mOpSwitcher.setVisibility(View.GONE);
     }
-    
+
     @Override
     public void onDismiss(DialogInterface dialog) {
         mOpSwitcher.setVisibility(View.VISIBLE);

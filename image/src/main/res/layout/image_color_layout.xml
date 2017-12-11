@@ -5,7 +5,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center_horizontal"
-    android:checkedButton="@id/cr_white"
+    android:checkedButton="@+id/cr_white"
     android:gravity="center"
     android:orientation="horizontal"
     android:padding="4dp">

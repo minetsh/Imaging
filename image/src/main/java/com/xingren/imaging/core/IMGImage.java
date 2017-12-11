@@ -59,8 +59,6 @@ public class IMGImage {
      */
     private IMGClip.Anchor mAnchor;
 
-    private boolean isTouching = false;
-
     private boolean isSteady = true;
 
     private Path mShade = new Path();
@@ -111,7 +109,7 @@ public class IMGImage {
 
     private static final int MAX_SIZE = 10000;
 
-    private Paint mPaint, mMosaicPaint;
+    private Paint mPaint, mMosaicPaint, mShadePaint;
 
     private Matrix M = new Matrix();
 
@@ -140,6 +138,10 @@ public class IMGImage {
 
     public IMGImage() {
         mImage = DEFAULT_IMAGE;
+
+        if (mMode == IMGMode.CLIP) {
+            initShadePaint();
+        }
     }
 
     public void setBitmap(Bitmap bitmap) {
@@ -169,6 +171,9 @@ public class IMGImage {
 
         if (mMode == IMGMode.CLIP) {
 
+            // 初始化Shade 画刷
+            initShadePaint();
+
             // 备份裁剪前Clip 区域
             mBackupClipRotate = getRotate();
             mBackupClipFrame.set(mClipFrame);
@@ -184,6 +189,16 @@ public class IMGImage {
             if (mMode == IMGMode.MOSAIC) {
                 makeMosaicBitmap();
             }
+
+            mClipWin.setClipping(false);
+        }
+    }
+
+    private void initShadePaint() {
+        if (mShadePaint == null) {
+            mShadePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            mShadePaint.setColor(COLOR_SHADE);
+            mShadePaint.setStyle(Paint.Style.FILL);
         }
     }
 
@@ -482,6 +497,7 @@ public class IMGImage {
         if (DEBUG) {
             // Clip 区域
             mPaint.setColor(Color.RED);
+            mPaint.setStrokeWidth(6);
             canvas.drawRect(mFrame, mPaint);
             canvas.drawRect(mClipFrame, mPaint);
         }
@@ -542,13 +558,9 @@ public class IMGImage {
     public void onDrawShade(Canvas canvas) {
         if (mMode == IMGMode.CLIP && isSteady) {
             mShade.reset();
-            mShade.addRect(mFrame, Path.Direction.CW);
+            mShade.addRect(mFrame.left - 2, mFrame.top - 2, mFrame.right + 2, mFrame.bottom + 2, Path.Direction.CW);
             mShade.addRect(mClipFrame, Path.Direction.CCW);
-
-            mPaint.setColor(COLOR_SHADE);
-            mPaint.setStyle(Paint.Style.FILL);
-            canvas.drawPath(mShade, mPaint);
-            mPaint.setStyle(Paint.Style.STROKE);
+            canvas.drawPath(mShade, mShadePaint);
         }
     }
 
@@ -559,36 +571,27 @@ public class IMGImage {
     }
 
     public void onTouchDown(float x, float y) {
+        isSteady = false;
         moveToBackground(mForeSticker);
         if (mMode == IMGMode.CLIP) {
             mAnchor = mClipWin.getAnchor(x, y);
         }
     }
 
-    public void onTouchDown() {
-        isTouching = true;
-        moveToBackground(mForeSticker);
-        if (mMode == IMGMode.CLIP) {
-//            mAnchor
-        }
-    }
-
     public void onTouchUp(float scrollX, float scrollY) {
-        isTouching = true;
         if (mAnchor != null) {
             mAnchor = null;
         }
     }
 
     public void onSteady(float scrollX, float scrollY) {
-
+        isSteady = true;
         onClipHoming();
         mClipWin.setShowShade(true);
     }
 
     public void onScaleBegin() {
-        // TODO
-//        onTouchDown(0, 0);
+
     }
 
     public IMGHoming onScroll(float scrollX, float scrollY, float dx, float dy) {

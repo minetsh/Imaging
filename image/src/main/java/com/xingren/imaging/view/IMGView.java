@@ -3,7 +3,9 @@ package com.xingren.imaging.view;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -90,7 +92,9 @@ public class IMGView extends FrameLayout implements Runnable {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        long time = SystemClock.elapsedRealtimeNanos();
         mDelegate.onDraw(canvas);
+        Log.d(TAG, String.format("onDraw: %f", (SystemClock.elapsedRealtimeNanos() - time) / 1000000d));
     }
 
     public Bitmap saveBitmap() {
