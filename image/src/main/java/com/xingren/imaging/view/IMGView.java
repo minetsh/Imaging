@@ -3,7 +3,6 @@ package com.xingren.imaging.view;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
@@ -92,9 +91,7 @@ public class IMGView extends FrameLayout implements Runnable {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        long time = SystemClock.elapsedRealtimeNanos();
         mDelegate.onDraw(canvas);
-        Log.d(TAG, String.format("onDraw: %f", (SystemClock.elapsedRealtimeNanos() - time) / 1000000d));
     }
 
     public Bitmap saveBitmap() {
@@ -117,7 +114,7 @@ public class IMGView extends FrameLayout implements Runnable {
     }
 
     public void addStickerText(IMGText text) {
-        IMGStickerTextViewOld textView = new IMGStickerTextViewOld(getContext());
+        IMGStickerTextView textView = new IMGStickerTextView(getContext());
 
         textView.setText(text);
 
@@ -137,11 +134,16 @@ public class IMGView extends FrameLayout implements Runnable {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        return mDelegate.onInterceptTouch(ev) || super.onInterceptTouchEvent(ev);
+        Log.d(TAG, "onInterceptTouchEvent:" + MotionEvent.actionToString(ev.getActionMasked()));
+        if(ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
+            return mDelegate.onInterceptTouch(ev) || super.onInterceptTouchEvent(ev);
+        }
+        return super.onInterceptTouchEvent(ev);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        Log.d(TAG, "onTouchEvent:" + MotionEvent.actionToString(event.getActionMasked()));
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 removeCallbacks(this);

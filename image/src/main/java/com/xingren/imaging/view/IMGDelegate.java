@@ -247,12 +247,19 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
             canvas.restore();
         }
 
-        // 文字贴片
-        mImage.onDrawStickers(canvas);
+        if (mImage.getMode() == IMGMode.CLIP) {
+            // 文字贴片
+            mImage.onDrawStickers(canvas);
+        }
 
         mImage.onDrawShade(canvas);
 
         canvas.restore();
+
+        if (mImage.getMode() != IMGMode.CLIP) {
+            // 文字贴片
+            mImage.onDrawStickers(canvas);
+        }
 
         // 裁剪
         if (mImage.getMode() == IMGMode.CLIP) {

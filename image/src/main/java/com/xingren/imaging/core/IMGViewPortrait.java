@@ -28,6 +28,8 @@ public interface IMGViewPortrait {
 
     void setY(float y);
 
+    void setRotation(float rotate);
+
     void setScaleX(float scaleX);
 
     void setScaleY(float scaleY);

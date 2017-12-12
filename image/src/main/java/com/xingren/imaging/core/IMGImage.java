@@ -167,6 +167,31 @@ public class IMGImage {
     }
 
     public void setMode(IMGMode mode) {
+
+        if (this.mMode == mode) return;
+
+        moveToBackground(mForeSticker);
+
+        if (this.mMode == IMGMode.CLIP) {
+            float dRotate = getRotate();
+            M.setRotate(dRotate, mClipFrame.centerX(), mClipFrame.centerY());
+            for (IMGSticker sticker : mBackStickers) {
+                M.mapRect(sticker.getFrame());
+                sticker.setRotation(sticker.getRotation() + dRotate);
+                sticker.setX(sticker.getFrame().centerX() - sticker.getPivotX());
+                sticker.setY(sticker.getFrame().centerY() - sticker.getPivotY());
+            }
+        } else if (mode == IMGMode.CLIP) {
+            float dRotate = -getRotate();
+            M.setRotate(dRotate, mClipFrame.centerX(), mClipFrame.centerY());
+            for (IMGSticker sticker : mBackStickers) {
+                M.mapRect(sticker.getFrame());
+                sticker.setRotation(sticker.getRotation() + dRotate);
+                sticker.setX(sticker.getFrame().centerX() - sticker.getPivotX());
+                sticker.setY(sticker.getFrame().centerY() - sticker.getPivotY());
+            }
+        }
+
         this.mMode = mode;
 
         if (mMode == IMGMode.CLIP) {
@@ -186,6 +211,7 @@ public class IMGImage {
             // 重置裁剪区域
             mClipWin.reset(mClipFrame, getTargetRotate());
         } else {
+
             if (mMode == IMGMode.MOSAIC) {
                 makeMosaicBitmap();
             }

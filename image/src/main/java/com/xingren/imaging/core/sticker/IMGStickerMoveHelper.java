@@ -8,7 +8,7 @@ import android.view.View;
  * Created by felix on 2017/11/17 下午6:08.
  */
 
-public class IMGStickerMoveHelper implements View.OnTouchListener {
+public class IMGStickerMoveHelper {
 
     private static final String TAG = "IMGStickerMoveHelper";
 
@@ -20,10 +20,8 @@ public class IMGStickerMoveHelper implements View.OnTouchListener {
 
     public IMGStickerMoveHelper(View view) {
         mView = view;
-        mView.setOnTouchListener(this);
     }
 
-    @Override
     public boolean onTouch(View v, MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
