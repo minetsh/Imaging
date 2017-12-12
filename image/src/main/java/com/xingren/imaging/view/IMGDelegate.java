@@ -13,24 +13,20 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
 
 import com.xingren.imaging.core.IMGImage;
 import com.xingren.imaging.core.IMGMode;
 import com.xingren.imaging.core.IMGPath;
 import com.xingren.imaging.core.anim.IMGHomingAnimator;
 import com.xingren.imaging.core.homing.IMGHoming;
-import com.xingren.imaging.core.sticker.IMGSticker;
-import com.xingren.imaging.core.sticker.IMGStickerPortrait;
+import com.xingren.imaging.core.sticker.IMGStickerX;
 
 /**
  * Created by felix on 2017/11/16 下午12:45.
  */
 
 class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
-        ValueAnimator.AnimatorUpdateListener, IMGStickerPortrait.Callback, Animator.AnimatorListener {
+        ValueAnimator.AnimatorUpdateListener, Animator.AnimatorListener {
 
     private static final String TAG = "IMGDelegate";
 
@@ -173,14 +169,31 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
         boolean handled = mSGDetector.onTouchEvent(event);
 
         IMGMode mode = mImage.getMode();
-
-        if (mode == IMGMode.NONE || mode == IMGMode.CLIP) {
-            handled |= onTouchNONE(event);
-        } else if (mPointerCount > 1) {
-            onPathDone();
-            handled |= onTouchNONE(event);
+        if (mode == IMGMode.CLIP) {
+            handled |= mGDetector.onTouchEvent(event);
         } else {
-            handled |= onTouchPath(event);
+            boolean isTouch = mImage.onTouch(mView.getScrollX(), mView.getScrollY(), event);
+            if (isTouch) {
+
+                mView.invalidate();
+                return true;
+            } else {
+                switch (mode) {
+                    case NONE:
+                        handled |= mGDetector.onTouchEvent(event);
+                        break;
+                    case DOODLE:
+                    case MOSAIC:
+                        if (mPointerCount > 1) {
+                            onPathDone();
+                            handled |= mGDetector.onTouchEvent(event);
+                        } else {
+                            handled |= onTouchPath(event);
+                        }
+                        break;
+                }
+            }
+            handled |= isTouch;
         }
 
         switch (event.getActionMasked()) {
@@ -254,6 +267,8 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
         canvas.restore();
 
+        mImage.onDrawActivatedSticker(canvas);
+
         // 裁剪
         if (mImage.getMode() == IMGMode.CLIP) {
             canvas.save();
@@ -303,6 +318,11 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
         mPen.reset();
         mView.invalidate();
         return true;
+    }
+
+    void onAddSticker(IMGStickerX sticker, int gravity) {
+        sticker.offset(500, 500);
+        mImage.addSticker(mView.getScrollX(), mView.getScrollY(), sticker);
     }
 
     private void onHoming() {
@@ -436,39 +456,6 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
             // TODO
             return super.onFling(e1, e2, velocityX, velocityY);
         }
-    }
-
-
-    public <V extends View & IMGSticker> void onAddStickerView(V stickerView) {
-        if (stickerView != null) {
-            stickerView.registerCallback(this);
-            mImage.addSticker(stickerView);
-        }
-    }
-
-    @Override
-    public <V extends View & IMGSticker> void onDismiss(V stickerView) {
-        mImage.onDismiss(stickerView);
-        mView.invalidate();
-    }
-
-    @Override
-    public <V extends View & IMGSticker> void onShowing(V stickerView) {
-        mImage.onShowing(stickerView);
-        mView.invalidate();
-    }
-
-    @Override
-    public <V extends View & IMGSticker> boolean onRemove(V stickerView) {
-        if (mImage != null) {
-            mImage.onRemoveSticker(stickerView);
-        }
-        stickerView.unregisterCallback(this);
-        ViewParent parent = stickerView.getParent();
-        if (parent != null) {
-            ((ViewGroup) parent).removeView(stickerView);
-        }
-        return true;
     }
 
     void cancelClip() {

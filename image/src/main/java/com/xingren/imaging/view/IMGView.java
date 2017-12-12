@@ -3,17 +3,14 @@ package com.xingren.imaging.view;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.os.SystemClock;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
-import android.view.View;
 import android.widget.FrameLayout;
 
 import com.xingren.imaging.core.IMGMode;
 import com.xingren.imaging.core.IMGText;
-import com.xingren.imaging.core.sticker.IMGSticker;
+import com.xingren.imaging.core.sticker.IMGStickerX;
 
 /**
  * Created by felix on 2017/11/14 下午6:43.
@@ -92,9 +89,7 @@ public class IMGView extends FrameLayout implements Runnable {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        long time = SystemClock.elapsedRealtimeNanos();
         mDelegate.onDraw(canvas);
-        Log.d(TAG, String.format("onDraw: %f", (SystemClock.elapsedRealtimeNanos() - time) / 1000000d));
     }
 
     public Bitmap saveBitmap() {
@@ -107,32 +102,39 @@ public class IMGView extends FrameLayout implements Runnable {
         mDelegate.onLayout(changed, left, top, right, bottom);
     }
 
-    public <V extends View & IMGSticker> void addStickerView(V stickerView, LayoutParams params) {
+    public void addStickerView(IMGStickerX stickerView, int gravity) {
         if (stickerView != null) {
+            mDelegate.onAddSticker(stickerView, gravity);
+        }
+    }
 
-            addView(stickerView, params);
-
-            mDelegate.onAddStickerView(stickerView);
+    public void addSticker(IMGStickerX sticker, int gravity) {
+        if (sticker != null) {
+            mDelegate.onAddSticker(sticker, gravity);
         }
     }
 
     public void addStickerText(IMGText text) {
-        IMGStickerTextViewOld textView = new IMGStickerTextViewOld(getContext());
+        IMGStickerXText sticker = new IMGStickerXText(text);
 
-        textView.setText(text);
+        addSticker(sticker, Gravity.CENTER);
 
-        LayoutParams layoutParams = new LayoutParams(
-                LayoutParams.WRAP_CONTENT,
-                LayoutParams.WRAP_CONTENT
-        );
-
-        // Center of the drawing window.
-        layoutParams.gravity = Gravity.CENTER;
-
-        textView.setX(getScrollX());
-        textView.setY(getScrollY());
-
-        addStickerView(textView, layoutParams);
+//        IMGStickerTextViewOld textView = new IMGStickerTextViewOld(getContext());
+//
+//        textView.setText(text);
+//
+//        LayoutParams layoutParams = new LayoutParams(
+//                LayoutParams.WRAP_CONTENT,
+//                LayoutParams.WRAP_CONTENT
+//        );
+//
+//        // Center of the drawing window.
+//        layoutParams.gravity = Gravity.CENTER;
+//
+//        textView.setX(getScrollX());
+//        textView.setY(getScrollY());
+//
+//        addStickerView(textView, layoutParams);
     }
 
     @Override

@@ -11,11 +11,12 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.util.Log;
+import android.view.MotionEvent;
 
 import com.xingren.imaging.core.clip.IMGClip;
 import com.xingren.imaging.core.clip.IMGClipWindow;
 import com.xingren.imaging.core.homing.IMGHoming;
-import com.xingren.imaging.core.sticker.IMGSticker;
+import com.xingren.imaging.core.sticker.IMGStickerX;
 import com.xingren.imaging.core.util.IMGUtils;
 
 import java.util.ArrayList;
@@ -68,8 +69,6 @@ public class IMGImage {
      */
     private IMGClipWindow mClipWin = new IMGClipWindow();
 
-    private boolean isDrawClip = false;
-
     /**
      * 编辑模式
      */
@@ -88,12 +87,12 @@ public class IMGImage {
     /**
      * 当前选中贴片
      */
-    private IMGSticker mForeSticker;
+    private IMGStickerX mForeSticker;
 
     /**
      * 为被选中贴片
      */
-    private List<IMGSticker> mBackStickers = new ArrayList<>();
+    private List<IMGStickerX> mBackStickers = new ArrayList<>();
 
     /**
      * 涂鸦路径
@@ -354,9 +353,9 @@ public class IMGImage {
         return homing;
     }
 
-    public <S extends IMGSticker> void addSticker(S sticker) {
+    public <S extends IMGStickerX> void addSticker(float scrollX, float scrollY, S sticker) {
         if (sticker != null) {
-            moveToForeground(sticker);
+            setActivatedSticker(scrollX, scrollY, sticker);
         }
     }
 
@@ -382,48 +381,79 @@ public class IMGImage {
         }
     }
 
-    private void moveToForeground(IMGSticker sticker) {
-        if (sticker == null) return;
+    public boolean onTouch(float scrollX, float scrollY, MotionEvent e) {
 
-        moveToBackground(mForeSticker);
+        if (onTouchActivatedSticker(scrollX, scrollY, e)) {
+            return true;
+        }
 
-        if (sticker.isShowing()) {
+        if (e.getActionMasked() == MotionEvent.ACTION_DOWN) {
+            float[] xy = {e.getX(), e.getY()};
+
+            float scale = 1 / getScale();
+
+            M.setTranslate(scrollX, scrollY);
+
+            M.postRotate(-getRotate(), mClipFrame.centerX(), mClipFrame.centerY());
+
+            M.postTranslate(-mFrame.left, -mFrame.top);
+
+            M.postScale(scale, scale);
+
+            M.mapPoints(xy);
+
+            for (IMGStickerX sticker : mBackStickers) {
+                if (sticker.isInside(xy[0], xy[1])) {
+                    setActivatedSticker(scrollX, scrollY, sticker);
+                    if (onTouchActivatedSticker(scrollX, scrollY, e)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean onTouchActivatedSticker(float scrollX, float scrollY, MotionEvent e) {
+        if (mForeSticker != null) {
+            IMGStickerX.StickerEvent event = mForeSticker.onTouch(e);
+            if (event != null) {
+                switch (event) {
+                    case REMOVE:
+                        break;
+                }
+                return true;
+            } else clearActivatedSticker(scrollX, scrollY, mForeSticker);
+        }
+        return false;
+    }
+
+    private void setActivatedSticker(float scrollX, float scrollY, IMGStickerX sticker) {
+        if (sticker == null || sticker == mForeSticker) return;
+
+        clearActivatedSticker(scrollX, scrollY, mForeSticker);
+
+        if (!sticker.isActivated()) {
+            sticker.setActivated(true);
             mForeSticker = sticker;
             // 从BackStickers中移除
             mBackStickers.remove(sticker);
-        } else sticker.show();
+        } else mForeSticker = sticker;
     }
 
-    private void moveToBackground(IMGSticker sticker) {
+    private void clearActivatedSticker(float scrollX, float scrollY, IMGStickerX sticker) {
         if (sticker == null) return;
 
-        if (!sticker.isShowing()) {
+        if (sticker.isActivated()) {
+            sticker.setActivated(false);
             // 加入BackStickers中
             if (!mBackStickers.contains(sticker)) {
                 mBackStickers.add(sticker);
             }
-
             if (mForeSticker == sticker) {
                 mForeSticker = null;
             }
-        } else sticker.dismiss();
-    }
-
-    public void onDismiss(IMGSticker sticker) {
-        moveToBackground(sticker);
-    }
-
-    public void onShowing(IMGSticker sticker) {
-        if (mForeSticker != sticker) {
-            moveToForeground(sticker);
-        }
-    }
-
-    public void onRemoveSticker(IMGSticker sticker) {
-        if (mForeSticker == sticker) {
-            mForeSticker = null;
-        } else {
-            mBackStickers.remove(sticker);
         }
     }
 
@@ -489,7 +519,7 @@ public class IMGImage {
     public void onDrawImage(Canvas canvas) {
 
         // 裁剪区域
-        canvas.clipRect(mClipWin.isClipping() ? mFrame : mClipFrame);
+//        canvas.clipRect(mClipWin.isClipping() ? mFrame : mClipFrame);
 
         // 绘制图片
         canvas.drawBitmap(mImage, null, mFrame, null);
@@ -539,19 +569,20 @@ public class IMGImage {
     }
 
     public void onDrawStickers(Canvas canvas) {
-        for (IMGSticker sticker : mBackStickers) {
-            if (!sticker.isShowing()) {
-                float tPivotX = sticker.getX() + sticker.getPivotX();
-                float tPivotY = sticker.getY() + sticker.getPivotY();
-                canvas.save();
-                M.reset();
-                M.setTranslate(sticker.getX(), sticker.getY());
-                M.postScale(sticker.getScaleX(), sticker.getScaleY(), tPivotX, tPivotY);
-                M.postRotate(sticker.getRotation(), tPivotX, tPivotY);
-                canvas.concat(M);
-                sticker.onSticker(canvas);
-                canvas.restore();
+        canvas.save();
+        for (IMGStickerX sticker : mBackStickers) {
+            if (!sticker.isActivated()) {
+                sticker.onDraw(canvas);
             }
+        }
+        canvas.restore();
+    }
+
+    public void onDrawActivatedSticker(Canvas canvas) {
+        if (mForeSticker != null) {
+            canvas.save();
+            mForeSticker.onDraw(canvas);
+            canvas.restore();
         }
     }
 
@@ -572,7 +603,10 @@ public class IMGImage {
 
     public void onTouchDown(float x, float y) {
         isSteady = false;
-        moveToBackground(mForeSticker);
+
+        // TODO
+//        clearActivatedSticker(mForeSticker);
+
         if (mMode == IMGMode.CLIP) {
             mAnchor = mClipWin.getAnchor(x, y);
         }
@@ -635,6 +669,9 @@ public class IMGImage {
 
     public void setRotate(float rotate) {
         mRotate = rotate;
+        for (IMGStickerX sticker : mBackStickers) {
+            sticker.setBaseRotate(rotate);
+        }
     }
 
     public float getScale() {
@@ -668,15 +705,19 @@ public class IMGImage {
 //            mClipFrame.intersect(mFrame);
         }
 
-        for (IMGSticker sticker : mBackStickers) {
-            M.mapRect(sticker.getFrame());
-            float tPivotX = sticker.getX() + sticker.getPivotX();
-            float tPivotY = sticker.getY() + sticker.getPivotY();
-            sticker.setScaleX(sticker.getScaleX() * factor);
-            sticker.setScaleY(sticker.getScaleY() * factor);
-            sticker.setX(sticker.getX() + sticker.getFrame().centerX() - tPivotX);
-            sticker.setY(sticker.getY() + sticker.getFrame().centerY() - tPivotY);
+        for (IMGStickerX sticker : mBackStickers) {
+            sticker.transform(M);
         }
+
+//        for (IMGSticker sticker : mBackStickers) {
+//            M.mapRect(sticker.getFrame());
+//            float tPivotX = sticker.getX() + sticker.getPivotX();
+//            float tPivotY = sticker.getY() + sticker.getPivotY();
+//            sticker.setScaleX(sticker.getScaleX() * factor);
+//            sticker.setScaleY(sticker.getScaleY() * factor);
+//            sticker.setX(sticker.getX() + sticker.getFrame().centerX() - tPivotX);
+//            sticker.setY(sticker.getY() + sticker.getFrame().centerY() - tPivotY);
+//        }
     }
 
     public void onScaleEnd() {
@@ -685,7 +726,6 @@ public class IMGImage {
 
     public void onHomingStart(boolean isRotate) {
         isAnimCanceled = false;
-        isDrawClip = true;
     }
 
     public void onHoming(float fraction) {
@@ -693,7 +733,6 @@ public class IMGImage {
     }
 
     public boolean onHomingEnd(float scrollX, float scrollY, boolean isRotate) {
-        isDrawClip = true;
         if (mMode == IMGMode.CLIP) {
             // 开启裁剪模式
 
