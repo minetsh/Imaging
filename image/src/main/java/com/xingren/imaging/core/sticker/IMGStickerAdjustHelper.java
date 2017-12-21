@@ -1,8 +1,11 @@
 package com.xingren.imaging.core.sticker;
 
 import android.graphics.Matrix;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+
+import com.xingren.imaging.view.IMGStickerView;
 
 /**
  * Created by felix on 2017/11/15 下午5:44.
@@ -12,16 +15,17 @@ public class IMGStickerAdjustHelper implements View.OnTouchListener {
 
     private static final String TAG = "IMGStickerAdjustHelper";
 
-    private View mContainer, mView;
+    private View mView;
 
-    private float mCenterX;
-    private float mCenterY;
+    private IMGStickerView mContainer;
+
+    private float mCenterX, mCenterY;
 
     private double mRadius;
 
-    private static final Matrix ROTATION = new Matrix();
+    private Matrix M = new Matrix();
 
-    public IMGStickerAdjustHelper(View container, View view) {
+    public IMGStickerAdjustHelper(IMGStickerView container, View view) {
         mView = view;
         mContainer = container;
         mView.setOnTouchListener(this);
@@ -35,30 +39,41 @@ public class IMGStickerAdjustHelper implements View.OnTouchListener {
                 float y = event.getY();
 
                 mCenterX = mCenterY = 0;
-                float pointX = mView.getX() - mContainer.getPivotX() + x;
-                float pointY = mView.getY() - mContainer.getPivotY() + y;
+
+                float pointX = (mView.getLeft() + mView.getRight()) / 2f;
+                float pointY = (mView.getTop() + mView.getBottom()) / 2f;
+
+                Log.d(TAG, String.format("X=%f, Y=%f, PivotX=%f, PivotY=%f", x, y, pointX, pointY));
 
                 mRadius = toLength(mCenterX, mCenterY, pointX, pointY);
 
-                ROTATION.reset();
-                ROTATION.setTranslate(pointX - x, pointY - y);
-                ROTATION.postRotate((float) -toDegrees(pointY, pointX), mCenterX, mCenterY);
+                M.setTranslate(pointX - x, pointY - y);
+
+                Log.d(TAG, String.format("degrees=%f", toDegrees(pointY, pointX)));
+
+                M.postRotate((float) -toDegrees(pointY, pointX), mCenterX, mCenterY);
 
                 return true;
 
             case MotionEvent.ACTION_MOVE:
 
                 float[] xy = {event.getX(), event.getY()};
-                ROTATION.mapPoints(xy);
+                Log.d(TAG, String.format("Raw x=%f, y=%f", xy[0], xy[1]));
 
-                double scale = toLength(mCenterX, mCenterY, xy[0], xy[1]) / mRadius;
-                double scaleX = mContainer.getScaleX() * scale;
-                double scaleY = mContainer.getScaleY() * scale;
+                M.mapPoints(xy);
 
-                mContainer.setScaleX((float) scaleX);
-                mContainer.setScaleY((float) scaleY);
+                float scale = (float) (toLength(mCenterX, mCenterY, xy[0], xy[1]) / mRadius);
 
-                mContainer.setRotation((float) ((mContainer.getRotation() + toDegrees(xy[1], xy[0])) % 360f));
+                Log.d(TAG, "Scale=" + scale);
+                mContainer.addScale(scale);
+
+                Log.d(TAG, String.format("x=%f,y=%f", xy[0], xy[1]));
+                Log.d(TAG, String.format("dDegrees=%f", toDegrees(xy[1], xy[0])));
+
+                float degrees = (float) ((mContainer.getRotation() + toDegrees(xy[1], xy[0])) % 360f);
+                Log.d(TAG, "degrees=" + degrees);
+                Log.d(TAG, "  ");
+                mContainer.setRotation(degrees);
 
                 return true;
         }

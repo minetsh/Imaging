@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.CornerPathEffect;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
@@ -130,11 +131,32 @@ class IMGDelegate implements ScaleGestureDetector.OnScaleGestureListener,
 
     // TODO
     Bitmap saveBitmap() {
-        RectF frame = mImage.getClipFrame();
-        Bitmap bitmap = Bitmap.createBitmap(Math.round(frame.width()), Math.round(frame.height()), Bitmap.Config.ARGB_8888);
+        mImage.stickAll();
+
+        float scale = 1f / mImage.getScale();
+
+        RectF frame = new RectF(mImage.getClipFrame());
+
+        // 旋转基画布
+        Matrix m = new Matrix();
+        m.setRotate(mImage.getRotate(), frame.centerX(), frame.centerY());
+        m.mapRect(frame);
+
+        // 缩放基画布
+        m.setScale(scale, scale, frame.left, frame.top);
+        m.mapRect(frame);
+
+        Bitmap bitmap = Bitmap.createBitmap(Math.round(frame.width()),
+                Math.round(frame.height()), Bitmap.Config.ARGB_8888);
+
         Canvas canvas = new Canvas(bitmap);
+
+        // 平移到基画布原点&缩放到原尺寸
         canvas.translate(-frame.left, -frame.top);
+        canvas.scale(scale, scale, frame.left, frame.top);
+
         onDraw(canvas);
+
         return bitmap;
     }
 

@@ -33,4 +33,10 @@ public interface IMGViewPortrait {
     void setScaleX(float scaleX);
 
     void setScaleY(float scaleY);
+
+    float getScale();
+
+    void setScale(float scale);
+
+    void addScale(float scale);
 }

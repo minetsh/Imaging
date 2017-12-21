@@ -1,0 +1,310 @@
+package com.xingren.imaging.view;
+
+import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.util.AttributeSet;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewConfiguration;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+
+import com.xingren.imaging.R;
+import com.xingren.imaging.core.sticker.IMGSticker;
+import com.xingren.imaging.core.sticker.IMGStickerAdjustHelper;
+import com.xingren.imaging.core.sticker.IMGStickerHelper;
+import com.xingren.imaging.core.sticker.IMGStickerMoveHelper;
+
+/**
+ * Created by felix on 2017/12/12 下午4:26.
+ */
+
+public abstract class IMGStickerView extends ViewGroup implements IMGSticker, View.OnClickListener {
+
+    private static final String TAG = "IMGStickerView";
+
+    private View mContentView;
+
+//    private ViewGroup mContentContainer;
+
+    private float mScale = 1f;
+
+    private float mLayoutScale = 1f;
+
+    // TODO
+    private int mDownShowing = 0;
+
+    private IMGStickerMoveHelper mMoveHelper;
+
+    private IMGStickerHelper<IMGStickerView> mStickerHelper;
+
+    private ImageView mRemoveView, mAdjustView;
+
+    private float mMaxScaleValue = MAX_SCALE_VALUE;
+
+    private Paint PAINT;
+
+    private RectF mFrame = new RectF();
+
+    private Rect mTempFrame = new Rect();
+
+    private static final float MAX_SCALE_VALUE = 4f;
+
+    private static final int ANCHOR_SIZE = 48;
+
+    private static final int ANCHOR_SIZE_HALF = ANCHOR_SIZE >> 1;
+
+    private static final float STROKE_WIDTH = 3f;
+
+    {
+        PAINT = new Paint(Paint.ANTI_ALIAS_FLAG);
+        PAINT.setColor(Color.WHITE);
+        PAINT.setStyle(Paint.Style.STROKE);
+        PAINT.setStrokeWidth(STROKE_WIDTH);
+    }
+
+    public IMGStickerView(Context context) {
+        this(context, null, 0);
+    }
+
+    public IMGStickerView(Context context, AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
+
+    public IMGStickerView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        onInitialize(context);
+    }
+
+    public void onInitialize(Context context) {
+        setBackgroundColor(Color.TRANSPARENT);
+
+        mContentView = onCreateContentView(context);
+        addView(mContentView, getContentLayoutParams());
+
+        mRemoveView = new ImageView(context);
+        mRemoveView.setScaleType(ImageView.ScaleType.FIT_XY);
+        mRemoveView.setImageResource(R.drawable.image_ic_delete);
+        addView(mRemoveView, getAnchorLayoutParams());
+        mRemoveView.setOnClickListener(this);
+
+        mAdjustView = new ImageView(context);
+        mAdjustView.setScaleType(ImageView.ScaleType.FIT_XY);
+        mAdjustView.setImageResource(R.drawable.image_ic_adjust);
+        addView(mAdjustView, getAnchorLayoutParams());
+
+        new IMGStickerAdjustHelper(this, mAdjustView);
+
+        mStickerHelper = new IMGStickerHelper<>(this);
+        mMoveHelper = new IMGStickerMoveHelper(this);
+    }
+
+    public abstract View onCreateContentView(Context context);
+
+    @Override
+    public float getScale() {
+        return mScale;
+    }
+
+    @Override
+    public void setScale(float scale) {
+        float aScale = scale / mScale;
+
+        mScale = scale;
+
+        Matrix m = new Matrix();
+        m.setScale(aScale, aScale, mFrame.centerX(), mFrame.centerY());
+        m.mapRect(mFrame);
+
+        mFrame.round(mTempFrame);
+
+        layout(mTempFrame.left, mTempFrame.top, mTempFrame.right, mTempFrame.bottom);
+    }
+
+    @Override
+    public void addScale(float scale) {
+        setScale(getScale() * scale);
+    }
+
+    private LayoutParams getContentLayoutParams() {
+        return new LayoutParams(
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT
+        );
+    }
+
+    private LayoutParams getAnchorLayoutParams() {
+        return new LayoutParams(ANCHOR_SIZE, ANCHOR_SIZE);
+    }
+
+    @Override
+    public void draw(Canvas canvas) {
+        if (isShowing()) {
+            PAINT.setStrokeWidth(2f / getScaleX());
+            canvas.drawRect(ANCHOR_SIZE_HALF, ANCHOR_SIZE_HALF,
+                    getWidth() - ANCHOR_SIZE_HALF,
+                    getHeight() - ANCHOR_SIZE_HALF, PAINT);
+        }
+        super.draw(canvas);
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int count = getChildCount();
+
+        int maxHeight = 0;
+        int maxWidth = 0;
+        int childState = 0;
+
+        for (int i = 0; i < count; i++) {
+            final View child = getChildAt(i);
+            if (child.getVisibility() != GONE) {
+                child.measure(widthMeasureSpec, heightMeasureSpec);
+
+                maxWidth = Math.max(maxWidth, child.getMeasuredWidth());
+                maxHeight = Math.max(maxHeight, child.getMeasuredHeight());
+
+                childState = combineMeasuredStates(childState, child.getMeasuredState());
+            }
+        }
+
+        // Check against our minimum height and width
+        maxHeight = Math.max(maxHeight, getSuggestedMinimumHeight());
+        maxWidth = Math.max(maxWidth, getSuggestedMinimumWidth());
+
+        setMeasuredDimension(resolveSizeAndState(maxWidth, widthMeasureSpec, childState),
+                resolveSizeAndState(maxHeight, heightMeasureSpec, childState << MEASURED_HEIGHT_STATE_SHIFT));
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+
+        mLayoutScale = mScale;
+
+        mFrame.set(left, top, right, bottom);
+
+        int count = getChildCount();
+        if (count == 0) {
+            return;
+        }
+
+        mRemoveView.layout(0, 0, mRemoveView.getMeasuredWidth(), mRemoveView.getMeasuredHeight());
+        mAdjustView.layout(
+                right - left - mAdjustView.getMeasuredWidth(),
+                bottom - top - mAdjustView.getMeasuredHeight(),
+                right - left, bottom - top
+        );
+
+        int centerX = (right - left) >> 1, centerY = (bottom - top) >> 1;
+        int hw = mContentView.getMeasuredWidth() >> 1;
+        int hh = mContentView.getMeasuredHeight() >> 1;
+
+        mContentView.layout(centerX - hw, centerY - hh, centerX + hw, centerY + hh);
+    }
+
+    @Override
+    protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
+        if (isShowing()) {
+            if (child == mContentView) {
+                canvas.save();
+                canvas.scale(getScale(), getScale(), getPivotX(), getPivotY());
+                boolean b = super.drawChild(canvas, child, drawingTime);
+                canvas.restore();
+                return b;
+            }
+            return super.drawChild(canvas, child, drawingTime);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        if (!isShowing() && ev.getAction() == MotionEvent.ACTION_DOWN) {
+            mDownShowing = 0;
+            show();
+            return true;
+        }
+        return isShowing() && super.onInterceptTouchEvent(ev);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+        boolean handled = mMoveHelper.onTouch(this, event);
+
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                mDownShowing++;
+                break;
+            case MotionEvent.ACTION_UP:
+                if (mDownShowing > 1 && event.getEventTime() - event.getDownTime() < ViewConfiguration.getTapTimeout()) {
+                    onContentTap();
+                    return true;
+                }
+                break;
+        }
+
+        return handled | super.onTouchEvent(event);
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v == mRemoveView) {
+            onRemove();
+        }
+    }
+
+    public void onRemove() {
+        mStickerHelper.remove();
+    }
+
+    public void onContentTap() {
+
+    }
+
+    @Override
+    public boolean show() {
+        return mStickerHelper.show();
+    }
+
+    @Override
+    public boolean remove() {
+        return mStickerHelper.remove();
+    }
+
+    @Override
+    public boolean dismiss() {
+        return mStickerHelper.dismiss();
+    }
+
+    @Override
+    public boolean isShowing() {
+        return mStickerHelper.isShowing();
+    }
+
+    @Override
+    public RectF getFrame() {
+        return mStickerHelper.getFrame();
+    }
+
+    @Override
+    public void onSticker(Canvas canvas) {
+        canvas.translate(mContentView.getX(), mContentView.getY());
+        mContentView.draw(canvas);
+    }
+
+    @Override
+    public void registerCallback(Callback callback) {
+        mStickerHelper.registerCallback(callback);
+    }
+
+    @Override
+    public void unregisterCallback(Callback callback) {
+        mStickerHelper.unregisterCallback(callback);
+    }
+}

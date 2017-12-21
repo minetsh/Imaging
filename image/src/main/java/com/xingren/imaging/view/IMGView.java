@@ -135,7 +135,7 @@ public class IMGView extends FrameLayout implements Runnable {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         Log.d(TAG, "onInterceptTouchEvent:" + MotionEvent.actionToString(ev.getActionMasked()));
-        if(ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
+        if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
             return mDelegate.onInterceptTouch(ev) || super.onInterceptTouchEvent(ev);
         }
         return super.onInterceptTouchEvent(ev);

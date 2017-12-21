@@ -435,6 +435,10 @@ public class IMGImage {
         } else sticker.dismiss();
     }
 
+    public void stickAll() {
+        moveToBackground(mForeSticker);
+    }
+
     public void onDismiss(IMGSticker sticker) {
         moveToBackground(sticker);
     }
@@ -565,20 +569,24 @@ public class IMGImage {
     }
 
     public void onDrawStickers(Canvas canvas) {
+        if (mBackStickers.isEmpty()) return;
+        canvas.save();
+        canvas.clipRect(mClipWin.isClipping() ? mFrame : mClipFrame);
         for (IMGSticker sticker : mBackStickers) {
             if (!sticker.isShowing()) {
                 float tPivotX = sticker.getX() + sticker.getPivotX();
                 float tPivotY = sticker.getY() + sticker.getPivotY();
                 canvas.save();
-                M.reset();
                 M.setTranslate(sticker.getX(), sticker.getY());
-                M.postScale(sticker.getScaleX(), sticker.getScaleY(), tPivotX, tPivotY);
+                M.postScale(sticker.getScale(), sticker.getScale(), tPivotX, tPivotY);
                 M.postRotate(sticker.getRotation(), tPivotX, tPivotY);
+
                 canvas.concat(M);
                 sticker.onSticker(canvas);
                 canvas.restore();
             }
         }
+        canvas.restore();
     }
 
     public void onDrawShade(Canvas canvas) {
@@ -698,8 +706,9 @@ public class IMGImage {
             M.mapRect(sticker.getFrame());
             float tPivotX = sticker.getX() + sticker.getPivotX();
             float tPivotY = sticker.getY() + sticker.getPivotY();
-            sticker.setScaleX(sticker.getScaleX() * factor);
-            sticker.setScaleY(sticker.getScaleY() * factor);
+            sticker.addScale(factor);
+//            sticker.setScaleX(sticker.getScaleX() * factor);
+//            sticker.setScaleY(sticker.getScaleY() * factor);
             sticker.setX(sticker.getX() + sticker.getFrame().centerX() - tPivotX);
             sticker.setY(sticker.getY() + sticker.getFrame().centerY() - tPivotY);
         }
