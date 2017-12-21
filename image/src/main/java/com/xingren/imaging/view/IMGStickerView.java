@@ -89,13 +89,13 @@ public abstract class IMGStickerView extends ViewGroup implements IMGSticker, Vi
 
         mRemoveView = new ImageView(context);
         mRemoveView.setScaleType(ImageView.ScaleType.FIT_XY);
-        mRemoveView.setImageResource(R.drawable.image_ic_delete);
+        mRemoveView.setImageResource(R.mipmap.image_ic_delete);
         addView(mRemoveView, getAnchorLayoutParams());
         mRemoveView.setOnClickListener(this);
 
         mAdjustView = new ImageView(context);
         mAdjustView.setScaleType(ImageView.ScaleType.FIT_XY);
-        mAdjustView.setImageResource(R.drawable.image_ic_adjust);
+        mAdjustView.setImageResource(R.mipmap.image_ic_adjust);
         addView(mAdjustView, getAnchorLayoutParams());
 
         new IMGStickerAdjustHelper(this, mAdjustView);
@@ -113,12 +113,19 @@ public abstract class IMGStickerView extends ViewGroup implements IMGSticker, Vi
 
     @Override
     public void setScale(float scale) {
-        float aScale = scale / mScale;
-
         mScale = scale;
 
+        mContentView.setScaleX(mScale);
+        mContentView.setScaleY(mScale);
+
+        int pivotX = (getLeft() + getRight()) >> 1;
+        int pivotY = (getTop() + getBottom()) >> 1;
+
+        mFrame.set(pivotX, pivotY, pivotX, pivotY);
+        mFrame.inset(-(mContentView.getMeasuredWidth() >> 1), -(mContentView.getMeasuredHeight() >> 1));
+
         Matrix m = new Matrix();
-        m.setScale(aScale, aScale, mFrame.centerX(), mFrame.centerY());
+        m.setScale(mScale, mScale, mFrame.centerX(), mFrame.centerY());
         m.mapRect(mFrame);
 
         mFrame.round(mTempFrame);
@@ -145,7 +152,6 @@ public abstract class IMGStickerView extends ViewGroup implements IMGSticker, Vi
     @Override
     public void draw(Canvas canvas) {
         if (isShowing()) {
-            PAINT.setStrokeWidth(2f / getScaleX());
             canvas.drawRect(ANCHOR_SIZE_HALF, ANCHOR_SIZE_HALF,
                     getWidth() - ANCHOR_SIZE_HALF,
                     getHeight() - ANCHOR_SIZE_HALF, PAINT);
@@ -173,7 +179,6 @@ public abstract class IMGStickerView extends ViewGroup implements IMGSticker, Vi
             }
         }
 
-        // Check against our minimum height and width
         maxHeight = Math.max(maxHeight, getSuggestedMinimumHeight());
         maxWidth = Math.max(maxWidth, getSuggestedMinimumWidth());
 
@@ -209,17 +214,7 @@ public abstract class IMGStickerView extends ViewGroup implements IMGSticker, Vi
 
     @Override
     protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
-        if (isShowing()) {
-            if (child == mContentView) {
-                canvas.save();
-                canvas.scale(getScale(), getScale(), getPivotX(), getPivotY());
-                boolean b = super.drawChild(canvas, child, drawingTime);
-                canvas.restore();
-                return b;
-            }
-            return super.drawChild(canvas, child, drawingTime);
-        }
-        return false;
+        return isShowing() && super.drawChild(canvas, child, drawingTime);
     }
 
     @Override

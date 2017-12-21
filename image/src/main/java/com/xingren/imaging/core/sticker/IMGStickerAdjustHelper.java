@@ -21,7 +21,7 @@ public class IMGStickerAdjustHelper implements View.OnTouchListener {
 
     private float mCenterX, mCenterY;
 
-    private double mRadius;
+    private double mRadius, mDegrees;
 
     private Matrix M = new Matrix();
 
@@ -35,17 +35,22 @@ public class IMGStickerAdjustHelper implements View.OnTouchListener {
     public boolean onTouch(View v, MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+
                 float x = event.getX();
+
                 float y = event.getY();
 
                 mCenterX = mCenterY = 0;
 
-                float pointX = (mView.getLeft() + mView.getRight()) / 2f;
-                float pointY = (mView.getTop() + mView.getBottom()) / 2f;
+                float pointX = mView.getX() + x - mContainer.getPivotX();
 
-                Log.d(TAG, String.format("X=%f, Y=%f, PivotX=%f, PivotY=%f", x, y, pointX, pointY));
+                float pointY = mView.getY() + y - mContainer.getPivotY();
 
-                mRadius = toLength(mCenterX, mCenterY, pointX, pointY);
+                Log.d(TAG, String.format("X=%f,Y=%f", pointX, pointY));
+
+                mRadius = toLength(0, 0, pointX, pointY);
+
+                mDegrees = toDegrees(pointY, pointX);
 
                 M.setTranslate(pointX - x, pointY - y);
 
@@ -58,22 +63,27 @@ public class IMGStickerAdjustHelper implements View.OnTouchListener {
             case MotionEvent.ACTION_MOVE:
 
                 float[] xy = {event.getX(), event.getY()};
-                Log.d(TAG, String.format("Raw x=%f, y=%f", xy[0], xy[1]));
 
-                M.mapPoints(xy);
+                pointX = mView.getX() + xy[0] - mContainer.getPivotX();
 
-                float scale = (float) (toLength(mCenterX, mCenterY, xy[0], xy[1]) / mRadius);
+                pointY = mView.getY() + xy[1] - mContainer.getPivotY();
 
-                Log.d(TAG, "Scale=" + scale);
+                Log.d(TAG, String.format("X=%f,Y=%f", pointX, pointY));
+
+                double radius = toLength(0, 0, pointX, pointY);
+
+                double degrees = toDegrees(pointY, pointX);
+
+                float scale = (float) (radius / mRadius);
+
+
                 mContainer.addScale(scale);
 
-                Log.d(TAG, String.format("x=%f,y=%f", xy[0], xy[1]));
-                Log.d(TAG, String.format("dDegrees=%f", toDegrees(xy[1], xy[0])));
+                Log.d(TAG, "    D   = " + (degrees - mDegrees));
 
-                float degrees = (float) ((mContainer.getRotation() + toDegrees(xy[1], xy[0])) % 360f);
-                Log.d(TAG, "degrees=" + degrees);
-                Log.d(TAG, "  ");
-                mContainer.setRotation(degrees);
+                mContainer.setRotation((float) (mContainer.getRotation() + degrees - mDegrees));
+
+                mRadius = radius;
 
                 return true;
         }
