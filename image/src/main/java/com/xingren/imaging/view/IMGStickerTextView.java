@@ -60,18 +60,6 @@ public class IMGStickerTextView extends IMGStickerView implements IMGTextEditDia
         return mTextView;
     }
 
-    @Override
-    public void setScale(float scale) {
-        super.setScale(scale);
-//        mTextView.setTextSize(mBaseTextSize * getScale());
-    }
-
-    @Override
-    public void addScale(float scale) {
-        super.addScale(scale);
-//        mTextView.setTextSize(mBaseTextSize * getScale());
-    }
-
     public void setText(IMGText text) {
         mText = text;
         if (mText != null && mTextView != null) {

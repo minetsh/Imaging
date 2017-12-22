@@ -4,13 +4,12 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.text.TextUtils;
+import android.view.Gravity;
+import android.widget.FrameLayout;
 
 import com.xingren.imaging.core.IMGMode;
 import com.xingren.imaging.core.IMGText;
-import com.xingren.imaging.core.util.IMGUtils;
-
-import java.io.File;
+import com.xingren.imaging.view.IMGStickerImageView;
 
 /**
  * Created by felix on 2017/11/14 下午2:26.
@@ -20,13 +19,24 @@ public class IMGEditActivity extends IMGEditBaseActivity {
 
     public static final String EXTRA_IMAGE_PATH = "EXTRA_IMAGE_PATH";
 
-    private static final int MAX_WIDTH = 8000;
+    private static final int MAX_WIDTH = 1024;
 
-    private static final int MAX_HEIGHT = 8000;
+    private static final int MAX_HEIGHT = 1024;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        IMGStickerImageView imageView = new IMGStickerImageView(getBaseContext());
+        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+        );
+
+        // Center of the drawing window.
+        layoutParams.gravity = Gravity.CENTER;
+
+        mImgView.addStickerView(imageView, layoutParams);
     }
 
     @Override

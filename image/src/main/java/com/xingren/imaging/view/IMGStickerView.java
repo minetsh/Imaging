@@ -30,11 +30,7 @@ public abstract class IMGStickerView extends ViewGroup implements IMGSticker, Vi
 
     private View mContentView;
 
-//    private ViewGroup mContentContainer;
-
     private float mScale = 1f;
-
-    private float mLayoutScale = 1f;
 
     // TODO
     private int mDownShowing = 0;
@@ -48,6 +44,8 @@ public abstract class IMGStickerView extends ViewGroup implements IMGSticker, Vi
     private float mMaxScaleValue = MAX_SCALE_VALUE;
 
     private Paint PAINT;
+
+    private Matrix mMatrix = new Matrix();
 
     private RectF mFrame = new RectF();
 
@@ -102,6 +100,9 @@ public abstract class IMGStickerView extends ViewGroup implements IMGSticker, Vi
 
         mStickerHelper = new IMGStickerHelper<>(this);
         mMoveHelper = new IMGStickerMoveHelper(this);
+
+        setMinimumWidth(300);
+        setMinimumHeight(200);
     }
 
     public abstract View onCreateContentView(Context context);
@@ -124,9 +125,8 @@ public abstract class IMGStickerView extends ViewGroup implements IMGSticker, Vi
         mFrame.set(pivotX, pivotY, pivotX, pivotY);
         mFrame.inset(-(mContentView.getMeasuredWidth() >> 1), -(mContentView.getMeasuredHeight() >> 1));
 
-        Matrix m = new Matrix();
-        m.setScale(mScale, mScale, mFrame.centerX(), mFrame.centerY());
-        m.mapRect(mFrame);
+        mMatrix.setScale(mScale, mScale, mFrame.centerX(), mFrame.centerY());
+        mMatrix.mapRect(mFrame);
 
         mFrame.round(mTempFrame);
 
@@ -188,8 +188,6 @@ public abstract class IMGStickerView extends ViewGroup implements IMGSticker, Vi
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-
-        mLayoutScale = mScale;
 
         mFrame.set(left, top, right, bottom);
 
