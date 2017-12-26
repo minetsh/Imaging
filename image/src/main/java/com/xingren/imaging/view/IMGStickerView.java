@@ -100,9 +100,6 @@ public abstract class IMGStickerView extends ViewGroup implements IMGSticker, Vi
 
         mStickerHelper = new IMGStickerHelper<>(this);
         mMoveHelper = new IMGStickerMoveHelper(this);
-
-        setMinimumWidth(300);
-        setMinimumHeight(200);
     }
 
     public abstract View onCreateContentView(Context context);

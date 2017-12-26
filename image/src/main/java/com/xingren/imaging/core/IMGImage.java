@@ -173,23 +173,9 @@ public class IMGImage {
         moveToBackground(mForeSticker);
 
         if (this.mMode == IMGMode.CLIP) {
-            float dRotate = getRotate();
-            M.setRotate(dRotate, mClipFrame.centerX(), mClipFrame.centerY());
-            for (IMGSticker sticker : mBackStickers) {
-                M.mapRect(sticker.getFrame());
-                sticker.setRotation(sticker.getRotation() + dRotate);
-                sticker.setX(sticker.getFrame().centerX() - sticker.getPivotX());
-                sticker.setY(sticker.getFrame().centerY() - sticker.getPivotY());
-            }
+            rotateStickers(getTargetRotate());
         } else if (mode == IMGMode.CLIP) {
-            float dRotate = -getRotate();
-            M.setRotate(dRotate, mClipFrame.centerX(), mClipFrame.centerY());
-            for (IMGSticker sticker : mBackStickers) {
-                M.mapRect(sticker.getFrame());
-                sticker.setRotation(sticker.getRotation() + dRotate);
-                sticker.setX(sticker.getFrame().centerX() - sticker.getPivotX());
-                sticker.setY(sticker.getFrame().centerY() - sticker.getPivotY());
-            }
+            rotateStickers(-getRotate());
         }
 
         this.mMode = mode;
@@ -217,6 +203,17 @@ public class IMGImage {
             }
 
             mClipWin.setClipping(false);
+        }
+    }
+
+    // TODO
+    private void rotateStickers(float rotate) {
+        M.setRotate(rotate, mClipFrame.centerX(), mClipFrame.centerY());
+        for (IMGSticker sticker : mBackStickers) {
+            M.mapRect(sticker.getFrame());
+            sticker.setRotation(sticker.getRotation() + rotate);
+            sticker.setX(sticker.getFrame().centerX() - sticker.getPivotX());
+            sticker.setY(sticker.getFrame().centerY() - sticker.getPivotY());
         }
     }
 
@@ -707,8 +704,6 @@ public class IMGImage {
             float tPivotX = sticker.getX() + sticker.getPivotX();
             float tPivotY = sticker.getY() + sticker.getPivotY();
             sticker.addScale(factor);
-//            sticker.setScaleX(sticker.getScaleX() * factor);
-//            sticker.setScaleY(sticker.getScaleY() * factor);
             sticker.setX(sticker.getX() + sticker.getFrame().centerX() - tPivotX);
             sticker.setY(sticker.getY() + sticker.getFrame().centerY() - tPivotY);
         }

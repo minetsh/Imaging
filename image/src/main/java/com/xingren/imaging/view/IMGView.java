@@ -35,7 +35,8 @@ import com.xingren.imaging.core.sticker.IMGStickerPortrait;
  * Created by felix on 2017/11/14 下午6:43.
  */
 // TODO clip外不加入path
-public class IMGView extends FrameLayout implements Runnable, ScaleGestureDetector.OnScaleGestureListener, ValueAnimator.AnimatorUpdateListener, IMGStickerPortrait.Callback, Animator.AnimatorListener {
+public class IMGView extends FrameLayout implements Runnable, ScaleGestureDetector.OnScaleGestureListener,
+        ValueAnimator.AnimatorUpdateListener, IMGStickerPortrait.Callback, Animator.AnimatorListener {
 
     private static final String TAG = "IMGView";
 
@@ -91,8 +92,6 @@ public class IMGView extends FrameLayout implements Runnable, ScaleGestureDetect
     }
 
     private void initialize(Context context) {
-//        mDelegate = new IMGDelegate(this);
-//        mView = view;
         mPen.setMode(mImage.getMode());
         mGDetector = new GestureDetector(context, new MoveAdapter());
         mSGDetector = new ScaleGestureDetector(context, this);
@@ -119,7 +118,8 @@ public class IMGView extends FrameLayout implements Runnable, ScaleGestureDetect
      * 是否真正修正归位
      */
     boolean isHoming() {
-        return mHomingAnimator != null && mHomingAnimator.isRunning();
+        return mHomingAnimator != null
+                && mHomingAnimator.isRunning();
     }
 
     private void onHoming() {
@@ -237,6 +237,7 @@ public class IMGView extends FrameLayout implements Runnable, ScaleGestureDetect
             canvas.restore();
         }
 
+        // TODO
         if (mImage.getMode() == IMGMode.CLIP) {
             // 文字贴片
             mImage.onDrawStickers(canvas);
@@ -246,6 +247,7 @@ public class IMGView extends FrameLayout implements Runnable, ScaleGestureDetect
 
         canvas.restore();
 
+        // TODO
         if (mImage.getMode() != IMGMode.CLIP) {
             // 文字贴片
             mImage.onDrawStickers(canvas);
@@ -567,14 +569,12 @@ public class IMGView extends FrameLayout implements Runnable, ScaleGestureDetect
 
     @Override
     public void onAnimationRepeat(Animator animation) {
-        // TODO need not implement.
+        // empty implementation.
     }
-
 
     private boolean onScroll(float dx, float dy) {
         IMGHoming homing = mImage.onScroll(getScrollX(), getScrollY(), -dx, -dy);
         if (homing != null) {
-//            mView.invalidate();
             toApplyHoming(homing);
             return true;
         }
@@ -604,34 +604,34 @@ public class IMGView extends FrameLayout implements Runnable, ScaleGestureDetect
 
         private int identity = Integer.MIN_VALUE;
 
-        public void reset() {
+        void reset() {
             this.path.reset();
             this.identity = Integer.MIN_VALUE;
         }
 
-        public void reset(float x, float y) {
+        void reset(float x, float y) {
             this.path.reset();
             this.path.moveTo(x, y);
             this.identity = Integer.MIN_VALUE;
         }
 
-        public void setIdentity(int identity) {
+        void setIdentity(int identity) {
             this.identity = identity;
         }
 
-        public boolean isIdentity(int identity) {
+        boolean isIdentity(int identity) {
             return this.identity == identity;
         }
 
-        public void lineTo(float x, float y) {
+        void lineTo(float x, float y) {
             this.path.lineTo(x, y);
         }
 
-        public boolean isEmpty() {
+        boolean isEmpty() {
             return this.path.isEmpty();
         }
 
-        public IMGPath toPath() {
+        IMGPath toPath() {
             return new IMGPath(new Path(this.path), getMode(), getColor(), getWidth());
         }
     }

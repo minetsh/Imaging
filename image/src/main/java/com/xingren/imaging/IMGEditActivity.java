@@ -4,12 +4,17 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.widget.FrameLayout;
 
 import com.xingren.imaging.core.IMGMode;
 import com.xingren.imaging.core.IMGText;
+import com.xingren.imaging.core.util.IMGUtils;
 import com.xingren.imaging.view.IMGStickerImageView;
+
+import java.io.File;
+import java.io.FileOutputStream;
 
 /**
  * Created by felix on 2017/11/14 下午2:26.
@@ -41,49 +46,47 @@ public class IMGEditActivity extends IMGEditBaseActivity {
 
     @Override
     public Bitmap getBitmap() {
-//        Intent intent = getIntent();
-//        if (intent == null) {
-//            return null;
-//        }
-//
-//        String path = intent.getStringExtra(EXTRA_IMAGE_PATH);
-//        if (TextUtils.isEmpty(path)) {
-//            return null;
-//        }
-//
-//        File file = new File(path);
-//        if (!file.exists()) {
-//            return null;
-//        }
-//
-//        BitmapFactory.Options options = new BitmapFactory.Options();
-//        options.inSampleSize = 1;
-//        options.inJustDecodeBounds = true;
-//
-//        Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
-//
-//        if (options.outWidth > MAX_WIDTH) {
-//            options.inSampleSize = IMGUtils.inSampleSize(Math.round(1f * options.outWidth / MAX_WIDTH));
-//        }
-//
-//        if (options.outHeight > MAX_HEIGHT) {
-//            options.inSampleSize = Math.max(options.inSampleSize,
-//                    IMGUtils.inSampleSize(Math.round(1f * options.outHeight / MAX_HEIGHT)));
-//        }
-//
-//        if (bitmap != null) {
-//            bitmap.recycle();
-//        }
-//        options.inJustDecodeBounds = false;
-//
-//        bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
-//        if (bitmap == null) {
-//            return null;
-//        }
+        Intent intent = getIntent();
+        if (intent == null) {
+            return null;
+        }
 
-//        return bitmap;
+        String path = intent.getStringExtra(EXTRA_IMAGE_PATH);
+        if (TextUtils.isEmpty(path)) {
+            return null;
+        }
 
-        return BitmapFactory.decodeResource(getResources(), R.drawable.g);
+        File file = new File(path);
+        if (!file.exists()) {
+            return null;
+        }
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 1;
+        options.inJustDecodeBounds = true;
+
+        Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
+
+        if (options.outWidth > MAX_WIDTH) {
+            options.inSampleSize = IMGUtils.inSampleSize(Math.round(1f * options.outWidth / MAX_WIDTH));
+        }
+
+        if (options.outHeight > MAX_HEIGHT) {
+            options.inSampleSize = Math.max(options.inSampleSize,
+                    IMGUtils.inSampleSize(Math.round(1f * options.outHeight / MAX_HEIGHT)));
+        }
+
+        if (bitmap != null) {
+            bitmap.recycle();
+        }
+        options.inJustDecodeBounds = false;
+
+        bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
+        if (bitmap == null) {
+            return null;
+        }
+
+        return bitmap;
     }
 
     @Override
@@ -122,14 +125,15 @@ public class IMGEditActivity extends IMGEditBaseActivity {
 
     @Override
     public void onDoneClick() {
-        // TODO
-
-
         Bitmap bitmap = mImgView.saveBitmap();
+        if (bitmap != null) {
+//            FileOutputStream fout = new FileOutputStream();
 
+        }
+
+//        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, )
 
         setResult(RESULT_OK, new Intent().putExtra("IMAGE", bitmap));
-
 
         finish();
     }
