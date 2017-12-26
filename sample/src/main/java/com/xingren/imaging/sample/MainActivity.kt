@@ -1,8 +1,7 @@
 package com.xingren.imaging.sample
 
-import android.app.Activity
 import android.content.Intent
-import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.xingren.imaging.IMGEditActivity
@@ -19,19 +18,10 @@ class MainActivity : AppCompatActivity() {
         btn_edit.setOnClickListener {
 
             val intent = Intent(this, IMGEditActivity::class.java)
-            intent.putExtra(IMGEditActivity.EXTRA_IMAGE_PATH, "/android_asset/g.jpeg")
+            intent.putExtra(IMGEditActivity.EXTRA_IMAGE_URI, Uri.parse("asset:///g.jpeg"))
             startActivityForResult(intent, REQ_EDIT_IMAGE)
         }
 
         btn_edit.performClick()
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQ_EDIT_IMAGE) {
-            if (resultCode == Activity.RESULT_OK) {
-                val bitmap = data?.getParcelableExtra<Bitmap>("IMAGE")
-                iv_image.setImageBitmap(bitmap)
-            }
-        }
     }
 }

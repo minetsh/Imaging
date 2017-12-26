@@ -3,14 +3,18 @@ package com.xingren.imaging;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Bundle;
+import android.net.Uri;
 import android.text.TextUtils;
+import android.view.Gravity;
+import android.widget.FrameLayout;
 
 import com.xingren.imaging.core.IMGMode;
 import com.xingren.imaging.core.IMGText;
+import com.xingren.imaging.core.file.IMGAssetFileDecoder;
+import com.xingren.imaging.core.file.IMGDecoder;
+import com.xingren.imaging.core.file.IMGFileDecoder;
 import com.xingren.imaging.core.util.IMGUtils;
-
-import java.io.File;
+import com.xingren.imaging.view.IMGStickerImageView;
 
 /**
  * Created by felix on 2017/11/14 下午2:26.
@@ -18,62 +22,79 @@ import java.io.File;
 
 public class IMGEditActivity extends IMGEditBaseActivity {
 
-    public static final String EXTRA_IMAGE_PATH = "EXTRA_IMAGE_PATH";
+    private static final int MAX_WIDTH = 1024;
 
-    private static final int MAX_WIDTH = 8000;
+    private static final int MAX_HEIGHT = 1024;
 
-    private static final int MAX_HEIGHT = 8000;
+    public static final String EXTRA_IMAGE_URI = "EXTRA_IMAGE_URI";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreated() {
+        IMGStickerImageView imageView = new IMGStickerImageView(getBaseContext());
+        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+        );
+
+        // Center of the drawing window.
+        layoutParams.gravity = Gravity.CENTER;
+
+        mImgView.addStickerView(imageView, layoutParams);
     }
 
     @Override
     public Bitmap getBitmap() {
-//        Intent intent = getIntent();
-//        if (intent == null) {
-//            return null;
-//        }
-//
-//        String path = intent.getStringExtra(EXTRA_IMAGE_PATH);
-//        if (TextUtils.isEmpty(path)) {
-//            return null;
-//        }
-//
-//        File file = new File(path);
-//        if (!file.exists()) {
-//            return null;
-//        }
-//
-//        BitmapFactory.Options options = new BitmapFactory.Options();
-//        options.inSampleSize = 1;
-//        options.inJustDecodeBounds = true;
-//
-//        Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
-//
-//        if (options.outWidth > MAX_WIDTH) {
-//            options.inSampleSize = IMGUtils.inSampleSize(Math.round(1f * options.outWidth / MAX_WIDTH));
-//        }
-//
-//        if (options.outHeight > MAX_HEIGHT) {
-//            options.inSampleSize = Math.max(options.inSampleSize,
-//                    IMGUtils.inSampleSize(Math.round(1f * options.outHeight / MAX_HEIGHT)));
-//        }
-//
-//        if (bitmap != null) {
-//            bitmap.recycle();
-//        }
-//        options.inJustDecodeBounds = false;
-//
-//        bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
-//        if (bitmap == null) {
-//            return null;
-//        }
+        Intent intent = getIntent();
+        if (intent == null) {
+            return null;
+        }
 
-//        return bitmap;
+        Uri uri = intent.getParcelableExtra(EXTRA_IMAGE_URI);
+        if (uri == null) {
+            return null;
+        }
 
-        return BitmapFactory.decodeResource(getResources(), R.drawable.g);
+        IMGDecoder decoder = null;
+
+        String path = uri.getPath();
+        if (!TextUtils.isEmpty(path)) {
+            switch (uri.getScheme()) {
+                case "asset":
+                    decoder = new IMGAssetFileDecoder(this, uri);
+                    break;
+                case "file":
+                    decoder = new IMGFileDecoder(uri);
+                    break;
+            }
+        }
+
+        if (decoder == null) {
+            return null;
+        }
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 1;
+        options.inJustDecodeBounds = true;
+
+        decoder.decode(options);
+
+        if (options.outWidth > MAX_WIDTH) {
+            options.inSampleSize = IMGUtils.inSampleSize(Math.round(1f * options.outWidth / MAX_WIDTH));
+        }
+
+        if (options.outHeight > MAX_HEIGHT) {
+            options.inSampleSize = Math.max(options.inSampleSize,
+                    IMGUtils.inSampleSize(Math.round(1f * options.outHeight / MAX_HEIGHT)));
+        }
+
+        options.inJustDecodeBounds = false;
+
+        Bitmap bitmap = decoder.decode(options);
+        if (bitmap == null) {
+            return null;
+        }
+
+        return bitmap;
     }
 
     @Override
@@ -112,14 +133,15 @@ public class IMGEditActivity extends IMGEditBaseActivity {
 
     @Override
     public void onDoneClick() {
-        // TODO
-
-
         Bitmap bitmap = mImgView.saveBitmap();
+        if (bitmap != null) {
+//            FileOutputStream fout = new FileOutputStream();
 
+        }
+
+//        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, )
 
         setResult(RESULT_OK, new Intent().putExtra("IMAGE", bitmap));
-
 
         finish();
     }
