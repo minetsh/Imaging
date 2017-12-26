@@ -238,7 +238,7 @@ public class IMGView extends FrameLayout implements Runnable, ScaleGestureDetect
         }
 
         // TODO
-        if (mImage.getMode() == IMGMode.CLIP) {
+        if (mImage.isFreezing()) {
             // 文字贴片
             mImage.onDrawStickers(canvas);
         }
@@ -248,8 +248,9 @@ public class IMGView extends FrameLayout implements Runnable, ScaleGestureDetect
         canvas.restore();
 
         // TODO
-        if (mImage.getMode() != IMGMode.CLIP) {
+        if (!mImage.isFreezing()) {
             // 文字贴片
+            mImage.onDrawStickerClip(canvas);
             mImage.onDrawStickers(canvas);
         }
 
@@ -332,7 +333,6 @@ public class IMGView extends FrameLayout implements Runnable, ScaleGestureDetect
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
-
             return onInterceptTouch(ev) || super.onInterceptTouchEvent(ev);
         }
         return super.onInterceptTouchEvent(ev);
@@ -342,8 +342,8 @@ public class IMGView extends FrameLayout implements Runnable, ScaleGestureDetect
         if (isHoming()) {
             stopHoming();
             return true;
-        } else if (event.getPointerCount() > 1) {
-            // TODO
+        } else if (mImage.getMode() == IMGMode.CLIP) {
+            return true;
         }
         return false;
     }

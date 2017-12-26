@@ -41,6 +41,8 @@ public class IMGImage {
      */
     private RectF mClipFrame = new RectF();
 
+    private RectF mTempClipFrame = new RectF();
+
     /**
      * 裁剪模式前状态备份
      */
@@ -74,6 +76,8 @@ public class IMGImage {
      * 编辑模式
      */
     private IMGMode mMode = IMGMode.NONE;
+
+    private boolean isFreezing = mMode == IMGMode.CLIP;
 
     /**
      * 可视区域，无Scroll 偏移区域
@@ -172,10 +176,8 @@ public class IMGImage {
 
         moveToBackground(mForeSticker);
 
-        if (this.mMode == IMGMode.CLIP) {
-            rotateStickers(getTargetRotate());
-        } else if (mode == IMGMode.CLIP) {
-            rotateStickers(-getRotate());
+        if (mode == IMGMode.CLIP) {
+            setFreezing(true);
         }
 
         this.mMode = mode;
@@ -565,14 +567,20 @@ public class IMGImage {
         }
     }
 
+    public void onDrawStickerClip(Canvas canvas) {
+        M.setRotate(getRotate(), mClipFrame.centerX(), mClipFrame.centerY());
+        M.mapRect(mTempClipFrame, mClipWin.isClipping() ? mFrame : mClipFrame);
+        canvas.clipRect(mTempClipFrame);
+    }
+
     public void onDrawStickers(Canvas canvas) {
         if (mBackStickers.isEmpty()) return;
         canvas.save();
-        canvas.clipRect(mClipWin.isClipping() ? mFrame : mClipFrame);
         for (IMGSticker sticker : mBackStickers) {
             if (!sticker.isShowing()) {
                 float tPivotX = sticker.getX() + sticker.getPivotX();
                 float tPivotY = sticker.getY() + sticker.getPivotY();
+
                 canvas.save();
                 M.setTranslate(sticker.getX(), sticker.getY());
                 M.postScale(sticker.getScale(), sticker.getScale(), tPivotX, tPivotY);
@@ -734,8 +742,23 @@ public class IMGImage {
             mClipWin.setResetting(false);
 
             return clip;
+        } else {
+            if (isFreezing && !isAnimCanceled) {
+                setFreezing(false);
+            }
         }
         return false;
+    }
+
+    public boolean isFreezing() {
+        return isFreezing;
+    }
+
+    private void setFreezing(boolean freezing) {
+        if (freezing != isFreezing) {
+            rotateStickers(freezing ? -getRotate() : getTargetRotate());
+            isFreezing = freezing;
+        }
     }
 
     public void onHomingCancel(boolean isRotate) {
