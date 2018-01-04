@@ -1,4 +1,9 @@
 <resources>
+
     <string name="app_name">sample</string>
     <string name="edit">Edit</string>
+    <string name="choose_images">Choose Images</string>
+    <string name="choose_multi">多选</string>
+    <string name="choose_single">单选</string>
+
 </resources>

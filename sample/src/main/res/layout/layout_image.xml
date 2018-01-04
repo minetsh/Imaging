@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:padding="2dp">
+
+    <com.facebook.drawee.view.SimpleDraweeView
+        android:id="@+id/sdv_image"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:background="#CCC"
+        app:actualImageScaleType="focusCrop"
+        app:viewAspectRatio="1" />
+
+</android.support.constraint.ConstraintLayout>

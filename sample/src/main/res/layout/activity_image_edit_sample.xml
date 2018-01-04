@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="160dp"
+        android:orientation="horizontal">
+
+        <com.facebook.drawee.view.SimpleDraweeView
+            android:id="@+id/sdv_image"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="#CCC"
+            app:actualImageScaleType="centerInside"
+            app:layout_constraintStart_toStartOf="parent"
+            app:viewAspectRatio="1" />
+
+        <com.facebook.drawee.view.SimpleDraweeView
+            android:id="@+id/sdv_image_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="#999"
+            app:actualImageScaleType="centerInside"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:viewAspectRatio="1" />
+
+    </android.support.constraint.ConstraintLayout>
+
+    <Button
+        android:id="@+id/btn_choose_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/choose_images" />
+
+</LinearLayout>

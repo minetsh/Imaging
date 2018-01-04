@@ -3,7 +3,7 @@ package com.xingren.imaging.gallery;
 import android.os.AsyncTask;
 
 import com.xingren.imaging.IMGGalleryActivity;
-import com.xingren.imaging.model.IMGImageViewModel;
+import com.xingren.imaging.gallery.model.IMGImageViewModel;
 
 import java.lang.ref.WeakReference;
 import java.util.List;

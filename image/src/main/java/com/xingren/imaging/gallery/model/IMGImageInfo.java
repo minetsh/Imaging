@@ -1,4 +1,4 @@
-package com.xingren.imaging.model;
+package com.xingren.imaging.gallery.model;
 
 import android.net.Uri;
 import android.os.Parcel;
@@ -10,7 +10,7 @@ import android.os.Parcelable;
 
 public class IMGImageInfo implements Parcelable {
 
-    private int size;
+    private long size;
 
     private int width;
 
@@ -23,12 +23,21 @@ public class IMGImageInfo implements Parcelable {
     private Uri uri;
 
     protected IMGImageInfo(Parcel in) {
-        size = in.readInt();
+        size = in.readLong();
         width = in.readInt();
         height = in.readInt();
         isOriginal = in.readByte() != 0;
         isEdited = in.readByte() != 0;
         uri = in.readParcelable(Uri.class.getClassLoader());
+    }
+
+    public IMGImageInfo(IMGImageViewModel model) {
+        this.size = model.getSize();
+        this.width = model.getWidth();
+        this.height = model.getHeight();
+        this.isOriginal = model.isOriginal();
+        this.isEdited = false;
+        this.uri = model.getUri();
     }
 
     public static final Creator<IMGImageInfo> CREATOR = new Creator<IMGImageInfo>() {
@@ -43,11 +52,11 @@ public class IMGImageInfo implements Parcelable {
         }
     };
 
-    public int getSize() {
+    public long getSize() {
         return size;
     }
 
-    public void setSize(int size) {
+    public void setSize(long size) {
         this.size = size;
     }
 
@@ -98,7 +107,7 @@ public class IMGImageInfo implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(size);
+        dest.writeLong(size);
         dest.writeInt(width);
         dest.writeInt(height);
         dest.writeByte((byte) (isOriginal ? 1 : 0));

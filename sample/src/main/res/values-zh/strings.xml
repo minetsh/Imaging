@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="choose_images">选择图片</string>
+    <string name="default_max_count">9</string>
+    <string name="choose_multi">多选</string>
+
+</resources>

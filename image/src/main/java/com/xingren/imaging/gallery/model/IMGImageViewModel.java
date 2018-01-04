@@ -1,4 +1,4 @@
-package com.xingren.imaging.model;
+package com.xingren.imaging.gallery.model;
 
 import android.net.Uri;
 
@@ -46,6 +46,10 @@ public class IMGImageViewModel {
 
     public void setSelected(boolean selected) {
         isSelected = selected;
+    }
+
+    public void toggleSelected() {
+        isSelected = !isSelected;
     }
 
     public int getWidth() {

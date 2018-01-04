@@ -1,4 +1,4 @@
-package com.xingren.imaging.gallery;
+package com.xingren.imaging.gallery.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -89,11 +89,17 @@ public class IMGChooseMode implements Parcelable {
 
         public Builder setSingleChoose(boolean single) {
             mode.isSingleChoose = single;
+            if (single) {
+                mode.maxChooseCount = 1;
+            }
             return this;
         }
 
         public Builder setMaxChooseCount(int maxChooseCount) {
             mode.maxChooseCount = maxChooseCount;
+            if (mode.isSingleChoose) {
+                mode.maxChooseCount = Math.min(1, maxChooseCount);
+            }
             return this;
         }
 

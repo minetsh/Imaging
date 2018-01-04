@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
@@ -16,11 +18,14 @@ import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.common.RotationOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
-import com.xingren.imaging.gallery.IMGChooseMode;
 import com.xingren.imaging.gallery.IMGScanTask;
 import com.xingren.imaging.gallery.IMGScanner;
-import com.xingren.imaging.model.IMGImageViewModel;
+import com.xingren.imaging.gallery.model.IMGChooseMode;
+import com.xingren.imaging.gallery.model.IMGImageInfo;
+import com.xingren.imaging.gallery.model.IMGImageViewModel;
+import com.xingren.imaging.widget.IMGGalleryHolderCallback;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +42,10 @@ public class IMGGalleryActivity extends Activity {
     private IMGChooseMode mGalleryMode;
 
     private Map<String, List<IMGImageViewModel>> mImages;
+
+    private List<IMGImageViewModel> mChooseImages = new ArrayList<>();
+
+    private static final String EXTRA_IMAGES = "IMAGES";
 
     private static final String EXTRA_CHOOSE_MODE = "CHOOSE_MODE";
 
@@ -56,6 +65,21 @@ public class IMGGalleryActivity extends Activity {
         new IMGScanTask(this).execute();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.image_menu_gallery, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.image_menu_done) {
+            onDone();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     public void onImages(Map<String, List<IMGImageViewModel>> images) {
         mImages = images;
         if (images != null) {
@@ -69,12 +93,62 @@ public class IMGGalleryActivity extends Activity {
         mAdapter.notifyDataSetChanged();
     }
 
-    public static Intent buildIntent(Context context, IMGChooseMode mode) {
+    private void onImageCheckClick(int position) {
+        IMGImageViewModel item = mAdapter.getItem(position);
+        if (item != null) {
+            if (!item.isSelected()) {
+                if (mChooseImages.size() >= mGalleryMode.getMaxChooseCount()) {
+                    // TODO 达到最大限度
+                    mAdapter.notifyItemChanged(position, true);
+                    return;
+                }
+            }
+
+            item.toggleSelected();
+            if (item.isSelected()) {
+                mChooseImages.add(item);
+            } else {
+                mChooseImages.remove(item);
+            }
+
+            mAdapter.notifyItemChanged(position, true);
+        }
+    }
+
+    private void onImageClick(int position) {
+        IMGImageViewModel item = mAdapter.getItem(position);
+        if (item != null) {
+            if (mGalleryMode.isSingleChoose()) {
+                mChooseImages.clear();
+                item.setSelected(true);
+                mChooseImages.add(item);
+                onDone();
+            }
+        }
+    }
+
+    private void onDone() {
+        ArrayList<IMGImageInfo> infos = new ArrayList<>();
+        for (IMGImageViewModel model : mChooseImages) {
+            infos.add(new IMGImageInfo(model));
+        }
+        setResult(RESULT_OK, new Intent().putParcelableArrayListExtra(EXTRA_IMAGES, infos));
+        finish();
+    }
+
+    public static ArrayList<IMGImageInfo> getImageInfos(Intent intent) {
+        if (intent != null) {
+            return intent.getParcelableArrayListExtra(EXTRA_IMAGES);
+        }
+        return null;
+    }
+
+    public static Intent newIntent(Context context, IMGChooseMode mode) {
         return new Intent(context, IMGGalleryActivity.class)
                 .putExtra(EXTRA_CHOOSE_MODE, mode);
     }
 
-    private class ImageAdapter extends RecyclerView.Adapter<ImageViewHolder> {
+    private class ImageAdapter extends RecyclerView.Adapter<ImageViewHolder> implements IMGGalleryHolderCallback {
 
         private List<IMGImageViewModel> models;
 
@@ -84,8 +158,8 @@ public class IMGGalleryActivity extends Activity {
 
         @Override
         public ImageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return new ImageViewHolder(getLayoutInflater()
-                    .inflate(R.layout.image_layout_image, parent, false));
+            return new ImageViewHolder(getLayoutInflater().inflate(
+                    R.layout.image_layout_image, parent, false), this);
         }
 
         @Override
@@ -97,29 +171,50 @@ public class IMGGalleryActivity extends Activity {
         public int getItemCount() {
             return models != null ? models.size() : 0;
         }
+
+        private IMGImageViewModel getItem(int position) {
+            if (position >= 0 && position < getItemCount()) {
+                return models.get(position);
+            }
+            return null;
+        }
+
+        @Override
+        public void onViewHolderClick(RecyclerView.ViewHolder holder) {
+            onImageClick(holder.getAdapterPosition());
+        }
+
+        @Override
+        public void onCheckClick(RecyclerView.ViewHolder holder) {
+            onImageCheckClick(holder.getAdapterPosition());
+        }
     }
 
-    private static class ImageViewHolder extends RecyclerView.ViewHolder {
+    private static class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private CheckBox mCheckBox;
 
         private SimpleDraweeView mImageView;
 
-        private ImageViewHolder(View itemView) {
+        private IMGGalleryHolderCallback mCallback;
+
+        private ImageViewHolder(View itemView, IMGGalleryHolderCallback callback) {
             super(itemView);
+            mCallback = callback;
+
             mCheckBox = itemView.findViewById(R.id.cb_box);
             mImageView = itemView.findViewById(R.id.sdv_image);
+
+            mCheckBox.setOnClickListener(this);
+            itemView.setOnClickListener(this);
         }
 
         private void update(IMGImageViewModel model, IMGChooseMode mode) {
             mCheckBox.setChecked(model.isSelected());
-            mImageView.setImageURI(model.getUri());
-
             mCheckBox.setVisibility(mode.isSingleChoose() ? View.GONE : View.VISIBLE);
 
             ImageRequest request = ImageRequestBuilder.newBuilderWithSource(model.getUri())
                     .setLocalThumbnailPreviewsEnabled(true)
-                    .disableDiskCache()
                     .setResizeOptions(new ResizeOptions(300, 300))
                     .setRotationOptions(RotationOptions.autoRotate())
                     .build();
@@ -130,6 +225,17 @@ public class IMGGalleryActivity extends Activity {
                     .build();
 
             mImageView.setController(controller);
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (mCallback != null) {
+                if (v.getId() == R.id.cb_box) {
+                    mCallback.onCheckClick(this);
+                } else {
+                    mCallback.onViewHolderClick(this);
+                }
+            }
         }
     }
 }
