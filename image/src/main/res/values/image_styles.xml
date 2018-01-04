@@ -38,4 +38,10 @@
 
     </style>
 
+    <style name="ImageGalleryTheme" parent="android:Theme.Holo">
+        <item name="image_gallery_span_count">4</item>
+    </style>
+
+    <item name="image_gallery_span_count" type="declare-styleable">3</item>
+
 </resources>

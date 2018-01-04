@@ -14,6 +14,12 @@ public class IMGImageViewModel {
 
     private boolean isOriginal;
 
+    private int width;
+
+    private int height;
+
+    private long size;
+
     public IMGImageViewModel(Uri uri) {
         this.uri = uri;
     }
@@ -40,5 +46,29 @@ public class IMGImageViewModel {
 
     public void setSelected(boolean selected) {
         isSelected = selected;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public long getSize() {
+        return size;
+    }
+
+    public void setSize(long size) {
+        this.size = size;
     }
 }

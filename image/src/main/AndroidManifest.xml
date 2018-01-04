@@ -1,9 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.xingren.imaging">
 
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application>
 
-        <activity android:name=".IMGGalleryActivity" />
+        <activity
+            android:name=".IMGGalleryActivity"
+            android:theme="@style/ImageGalleryTheme" />
 
         <activity
             android:name=".IMGEditActivity"

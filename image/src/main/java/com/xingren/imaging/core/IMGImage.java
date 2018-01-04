@@ -766,6 +766,12 @@ public class IMGImage {
         Log.d(TAG, "Homing cancel");
     }
 
+    public void release() {
+        if (mImage != null && !mImage.isRecycled()) {
+            mImage.recycle();
+        }
+    }
+
     @Override
     protected void finalize() throws Throwable {
         super.finalize();

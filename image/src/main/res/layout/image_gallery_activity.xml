@@ -11,7 +11,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         app:layoutManager="GridLayoutManager"
-        app:spanCount="3" />
+        app:spanCount="?attr/image_gallery_span_count" />
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -25,12 +25,14 @@
             android:text="@string/image_all_photo" />
 
         <CheckBox
+            android:id="@+id/cb_original"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/image_original" />
 
         <TextView
+            android:id="@+id/tv_preview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end|center_vertical"

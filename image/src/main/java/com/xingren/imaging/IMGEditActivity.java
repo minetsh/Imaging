@@ -5,8 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.text.TextUtils;
-import android.view.Gravity;
-import android.widget.FrameLayout;
 
 import com.xingren.imaging.core.IMGMode;
 import com.xingren.imaging.core.IMGText;
@@ -14,7 +12,10 @@ import com.xingren.imaging.core.file.IMGAssetFileDecoder;
 import com.xingren.imaging.core.file.IMGDecoder;
 import com.xingren.imaging.core.file.IMGFileDecoder;
 import com.xingren.imaging.core.util.IMGUtils;
-import com.xingren.imaging.view.IMGStickerImageView;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * Created by felix on 2017/11/14 下午2:26.
@@ -26,20 +27,13 @@ public class IMGEditActivity extends IMGEditBaseActivity {
 
     private static final int MAX_HEIGHT = 1024;
 
-    public static final String EXTRA_IMAGE_URI = "EXTRA_IMAGE_URI";
+    public static final String EXTRA_IMAGE_URI = "IMAGE_URI";
+
+    public static final String EXTRA_IMAGE_SAVE_PATH = "IMAGE_SAVE_PATH";
 
     @Override
     public void onCreated() {
-        IMGStickerImageView imageView = new IMGStickerImageView(getBaseContext());
-        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT
-        );
 
-        // Center of the drawing window.
-        layoutParams.gravity = Gravity.CENTER;
-
-        mImgView.addStickerView(imageView, layoutParams);
     }
 
     @Override
@@ -133,16 +127,31 @@ public class IMGEditActivity extends IMGEditBaseActivity {
 
     @Override
     public void onDoneClick() {
-        Bitmap bitmap = mImgView.saveBitmap();
-        if (bitmap != null) {
-//            FileOutputStream fout = new FileOutputStream();
-
+        String path = getIntent().getStringExtra(EXTRA_IMAGE_SAVE_PATH);
+        if (!TextUtils.isEmpty(path)) {
+            Bitmap bitmap = mImgView.saveBitmap();
+            if (bitmap != null) {
+                FileOutputStream fout = null;
+                try {
+                    fout = new FileOutputStream(path);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fout);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (fout != null) {
+                        try {
+                            fout.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                setResult(RESULT_OK);
+                finish();
+                return;
+            }
         }
-
-//        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, )
-
-        setResult(RESULT_OK, new Intent().putExtra("IMAGE", bitmap));
-
+        setResult(RESULT_CANCELED);
         finish();
     }
 

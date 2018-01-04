@@ -465,6 +465,7 @@ public class IMGView extends FrameLayout implements Runnable, ScaleGestureDetect
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         removeCallbacks(this);
+        mImage.release();
     }
 
     @Override

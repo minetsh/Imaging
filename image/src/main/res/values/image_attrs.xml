@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
+    <attr name="image_gallery_span_count" format="integer" />
+
     <declare-styleable name="IMGColorRadio" tools:ignore="ResourceName">
 
         <attr name="image_color" format="color" />
