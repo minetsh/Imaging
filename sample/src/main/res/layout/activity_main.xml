@@ -4,35 +4,55 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.xingren.imaging.sample.MainActivity">
+    android:layout_marginBottom="100dp"
+    tools:context="me.kareluo.imaging.sample.MainActivity">
 
     <com.facebook.drawee.view.SimpleDraweeView
-        android:id="@+id/sdv_image"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:actualImageResource="@drawable/image_bg_bottom"
-        app:actualImageScaleType="center" />
+        android:id="@+id/sdv_image_edit"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:foreground="@drawable/fg_image"
+        app:actualImageResource="@mipmap/sample_edited"
+        app:actualImageScaleType="focusCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/sdv_image_album"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:roundAsCircle="true"
+        app:roundingBorderColor="?attr/colorAccent"
+        app:roundingBorderWidth="2dp" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <com.facebook.drawee.view.SimpleDraweeView
+        android:id="@+id/sdv_image_album"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:foreground="@drawable/fg_image"
+        app:actualImageResource="@mipmap/sample_album"
+        app:actualImageScaleType="focusCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/sdv_image_edit"
+        app:layout_constraintTop_toTopOf="parent"
+        app:roundAsCircle="true"
+        app:roundingBorderColor="?attr/colorAccent"
+        app:roundingBorderWidth="2dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_marginTop="8dp"
+        android:text="@string/image_edit"
+        app:layout_constraintEnd_toEndOf="@+id/sdv_image_edit"
+        app:layout_constraintStart_toStartOf="@+id/sdv_image_edit"
+        app:layout_constraintTop_toBottomOf="@+id/sdv_image_edit" />
 
-        <Button
-            android:id="@+id/btn_edit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/edit"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent" />
-
-        <Button
-            android:id="@+id/btn_gallery"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Gallery" />
-
-    </LinearLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/image_album"
+        app:layout_constraintEnd_toEndOf="@+id/sdv_image_album"
+        app:layout_constraintStart_toStartOf="@+id/sdv_image_album"
+        app:layout_constraintTop_toBottomOf="@+id/sdv_image_album" />
 
 </android.support.constraint.ConstraintLayout>

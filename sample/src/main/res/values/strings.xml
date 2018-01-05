@@ -1,9 +1,14 @@
 <resources>
 
-    <string name="app_name">sample</string>
-    <string name="edit">Edit</string>
-    <string name="choose_images">Choose Images</string>
-    <string name="choose_multi">多选</string>
+    <string name="app_name">Imaging</string>
+    <string name="edit">编辑</string>
     <string name="choose_single">单选</string>
+    <string name="choose_images">选择图片</string>
+    <string name="default_max_count">9</string>
+    <string name="choose_multi">多选</string>
+
+    <string name="image_edit">图片编辑</string>
+    <string name="image_album">相册</string>
+    <string name="custom_album">自定义相册</string>
 
 </resources>
