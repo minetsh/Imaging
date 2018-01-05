@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.TextView;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.controller.AbstractDraweeController;
@@ -19,6 +20,13 @@ import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.common.RotationOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import me.kareluo.imaging.gallery.IMGGalleryMenuWindow;
 import me.kareluo.imaging.gallery.IMGScanTask;
 import me.kareluo.imaging.gallery.IMGScanner;
 import me.kareluo.imaging.gallery.model.IMGChooseMode;
@@ -26,21 +34,23 @@ import me.kareluo.imaging.gallery.model.IMGImageInfo;
 import me.kareluo.imaging.gallery.model.IMGImageViewModel;
 import me.kareluo.imaging.widget.IMGGalleryHolderCallback;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 /**
  * Created by felix on 2017/11/14 上午11:30.
  */
 
-public class IMGGalleryActivity extends AppCompatActivity {
+public class IMGGalleryActivity extends AppCompatActivity implements View.OnClickListener {
 
     private ImageAdapter mAdapter;
 
     private RecyclerView mRecyclerView;
 
     private IMGChooseMode mGalleryMode;
+
+    private TextView mAlbumFolderView;
+
+    private View mFooterView;
+
+    private IMGGalleryMenuWindow mGalleryMenuWindow;
 
     private Map<String, List<IMGImageViewModel>> mImages;
 
@@ -69,6 +79,11 @@ public class IMGGalleryActivity extends AppCompatActivity {
         mRecyclerView.setAdapter(mAdapter = new ImageAdapter());
 
         new IMGScanTask(this).execute();
+
+        mFooterView = findViewById(R.id.layout_footer);
+
+        mAlbumFolderView = findViewById(R.id.tv_album_folder);
+        mAlbumFolderView.setOnClickListener(this);
     }
 
     @Override
@@ -91,6 +106,15 @@ public class IMGGalleryActivity extends AppCompatActivity {
         if (images != null) {
             mAdapter.setModels(images.get(IMGScanner.ALL_IMAGES));
             mAdapter.notifyDataSetChanged();
+
+            IMGGalleryMenuWindow window = getGalleryMenuWindow();
+            Set<String> keys = images.keySet();
+            List<String> items = new ArrayList<>(keys);
+            if (!items.isEmpty() && !IMGScanner.ALL_IMAGES.equals(items.get(0))) {
+                items.remove(IMGScanner.ALL_IMAGES);
+                items.add(0, IMGScanner.ALL_IMAGES);
+            }
+            window.setMenuItems(items);
         }
     }
 
@@ -142,6 +166,13 @@ public class IMGGalleryActivity extends AppCompatActivity {
         finish();
     }
 
+    private IMGGalleryMenuWindow getGalleryMenuWindow() {
+        if (mGalleryMenuWindow == null) {
+            mGalleryMenuWindow = new IMGGalleryMenuWindow(this);
+        }
+        return mGalleryMenuWindow;
+    }
+
     public static ArrayList<IMGImageInfo> getImageInfos(Intent intent) {
         if (intent != null) {
             return intent.getParcelableArrayListExtra(EXTRA_IMAGES);
@@ -152,6 +183,20 @@ public class IMGGalleryActivity extends AppCompatActivity {
     public static Intent newIntent(Context context, IMGChooseMode mode) {
         return new Intent(context, IMGGalleryActivity.class)
                 .putExtra(EXTRA_CHOOSE_MODE, mode);
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.tv_album_folder) {
+            showGalleryMenu();
+        }
+    }
+
+    private void showGalleryMenu() {
+        IMGGalleryMenuWindow window = getGalleryMenuWindow();
+        if (window != null) {
+            window.show(mFooterView);
+        }
     }
 
     private class ImageAdapter extends RecyclerView.Adapter<ImageViewHolder> implements IMGGalleryHolderCallback {

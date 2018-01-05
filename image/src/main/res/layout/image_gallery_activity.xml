@@ -14,12 +14,14 @@
         app:spanCount="?attr/image_gallery_span_count" />
 
     <FrameLayout
+        android:id="@+id/layout_footer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/image_color_primary"
         android:padding="6dp">
 
         <TextView
+            android:id="@+id/tv_album_folder"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
