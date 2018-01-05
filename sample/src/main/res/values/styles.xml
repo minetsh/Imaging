@@ -8,4 +8,10 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="AppGalleryTheme" parent="@style/AppTheme">
+
+        <item name="image_gallery_span_count">3</item>
+
+    </style>
+
 </resources>

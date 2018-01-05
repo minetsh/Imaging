@@ -169,8 +169,8 @@ public abstract class IMGStickerView extends ViewGroup implements IMGSticker, Vi
             if (child.getVisibility() != GONE) {
                 child.measure(widthMeasureSpec, heightMeasureSpec);
 
-                maxWidth = Math.max(maxWidth, child.getMeasuredWidth());
-                maxHeight = Math.max(maxHeight, child.getMeasuredHeight());
+                maxWidth = Math.round(Math.max(maxWidth, child.getMeasuredWidth() * child.getScaleX()));
+                maxHeight = Math.round(Math.max(maxHeight, child.getMeasuredHeight() * child.getScaleY()));
 
                 childState = combineMeasuredStates(childState, child.getMeasuredState());
             }

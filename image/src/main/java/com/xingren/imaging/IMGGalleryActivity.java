@@ -1,9 +1,10 @@
 package com.xingren.imaging;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,7 +34,7 @@ import java.util.Map;
  * Created by felix on 2017/11/14 上午11:30.
  */
 
-public class IMGGalleryActivity extends Activity {
+public class IMGGalleryActivity extends AppCompatActivity {
 
     private ImageAdapter mAdapter;
 
@@ -48,6 +49,11 @@ public class IMGGalleryActivity extends Activity {
     private static final String EXTRA_IMAGES = "IMAGES";
 
     private static final String EXTRA_CHOOSE_MODE = "CHOOSE_MODE";
+
+    private static final int[] ATTRS = new int[]{
+            R.attr.image_gallery_span_count,
+            R.attr.image_gallery_select_shade
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -197,6 +203,8 @@ public class IMGGalleryActivity extends Activity {
         private SimpleDraweeView mImageView;
 
         private IMGGalleryHolderCallback mCallback;
+
+        private static Drawable FORE_DRAWABLE = null;
 
         private ImageViewHolder(View itemView, IMGGalleryHolderCallback callback) {
             super(itemView);
