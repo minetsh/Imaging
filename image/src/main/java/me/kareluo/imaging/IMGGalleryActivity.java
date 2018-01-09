@@ -199,7 +199,8 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-    private class ImageAdapter extends RecyclerView.Adapter<ImageViewHolder> implements IMGGalleryHolderCallback {
+    private class ImageAdapter extends RecyclerView.Adapter<ImageViewHolder>
+            implements IMGGalleryHolderCallback {
 
         private List<IMGImageViewModel> models;
 
@@ -241,7 +242,8 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-    private static class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    private static class ImageViewHolder extends RecyclerView.ViewHolder
+            implements View.OnClickListener {
 
         private CheckBox mCheckBox;
 
