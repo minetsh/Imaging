@@ -2,7 +2,7 @@
 
 一款图片编辑类库，功能类似微信中图片编辑功能，其主要目标用于聊天中快速编辑图片。
 
-![Summary](./screenshot/summary.png)
+![Summary](./screenshot/pv.webp)
 
 包含以下主要功能：
 
