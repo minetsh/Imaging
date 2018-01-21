@@ -48,4 +48,6 @@ fun onImageEditDone() {
 }
 ```
 
+# Blog
 
+- [Android 图片编辑的原理与实现——涂鸦与马赛克](https://mp.weixin.qq.com/s/rIGGSFua-HPmUL4citYxow)
