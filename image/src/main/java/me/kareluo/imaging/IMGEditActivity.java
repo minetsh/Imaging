@@ -59,6 +59,9 @@ public class IMGEditActivity extends IMGEditBaseActivity {
                 case "file":
                     decoder = new IMGFileDecoder(uri);
                     break;
+                case "content":
+                    decoder = new IMGContentDecoder(uri, getContentResolver());
+                    break;
             }
         }
 
