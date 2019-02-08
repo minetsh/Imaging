@@ -11,6 +11,7 @@ import me.kareluo.imaging.core.IMGText;
 import me.kareluo.imaging.core.file.IMGAssetFileDecoder;
 import me.kareluo.imaging.core.file.IMGDecoder;
 import me.kareluo.imaging.core.file.IMGFileDecoder;
+import me.kareluo.imaging.core.file.IMGContentDecoder;
 import me.kareluo.imaging.core.util.IMGUtils;
 
 import java.io.FileNotFoundException;
