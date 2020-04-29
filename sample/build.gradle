@@ -6,7 +6,7 @@ android {
     compileSdkVersion 29
 
     defaultConfig {
-        applicationId "me.kareluo.imaging.sample"
+        applicationId "me.minetsh.imaging.sample"
         minSdkVersion 21
         targetSdkVersion 29
         versionCode 1

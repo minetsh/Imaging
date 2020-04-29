@@ -1,6 +1,8 @@
 package me.minetsh.imaging.sample
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -30,7 +32,7 @@ class GallerySampleActivity : AppCompatActivity() {
         setContentView(R.layout.activity_gallery_sample)
 
         mAdapter = GalleryImageAdapter(this)
-//        rv_images.adapter = mAdapter
+        rv_images.adapter = mAdapter
 
         btn_choose.setOnClickListener {
             chooseImages()
@@ -71,15 +73,16 @@ class GallerySampleActivity : AppCompatActivity() {
         mAdapter?.notifyDataSetChanged()
     }
 
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        when (requestCode) {
-//            REQ_IMAGE_CHOOSE -> {
-//                if (resultCode == Activity.RESULT_OK) {
-//                    onChooseImages(IMGGalleryActivity.getImageInfos(data))
-//                }
-//            }
-//        }
-//    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (requestCode) {
+            REQ_IMAGE_CHOOSE -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    onChooseImages(IMGGalleryActivity.getImageInfos(data))
+                }
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+    }
 }
 
 class GalleryImageAdapter(private val context: Context) : RecyclerView.Adapter<GalleryImageViewHolder>() {

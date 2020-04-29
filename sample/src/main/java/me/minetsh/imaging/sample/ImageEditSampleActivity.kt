@@ -1,5 +1,6 @@
 package me.minetsh.imaging.sample
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -59,18 +60,19 @@ class ImageEditSampleActivity : AppCompatActivity() {
         sdv_image_edit.setImageURI(Uri.fromFile(mImageFile), null)
     }
 
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        when (requestCode) {
-//            REQ_IMAGE_CHOOSE -> {
-//                if (resultCode == Activity.RESULT_OK) {
-//                    onChooseImages(IMGGalleryActivity.getImageInfos(data))
-//                }
-//            }
-//            REQ_IMAGE_EDIT -> {
-//                if (resultCode == Activity.RESULT_OK) {
-//                    onImageEditDone()
-//                }
-//            }
-//        }
-//    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (requestCode) {
+            REQ_IMAGE_CHOOSE -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    onChooseImages(IMGGalleryActivity.getImageInfos(data))
+                }
+            }
+            REQ_IMAGE_EDIT -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    onImageEditDone()
+                }
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+    }
 }

@@ -3,9 +3,9 @@ package me.minetsh.imaging;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,7 +13,9 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.CheckBox;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.RecyclerView;
@@ -73,6 +75,8 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
             R.attr.image_gallery_select_shade
     };
 
+    private static final String TAG = "IMGGalleryActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,16 +90,10 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
             if (button != null) {
                 button.setOnClickListener(this);
             }
-        }
-
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission_group.STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission_group.STORAGE}, REQ_STORAGE);
         } else {
-
+            new IMGScanTask(this).execute();
         }
-
 
         mGalleryMode = getIntent().getParcelableExtra(EXTRA_CHOOSE_MODE);
         if (mGalleryMode == null) {
@@ -104,8 +102,6 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
 
         mRecyclerView = findViewById(R.id.rv_images);
         mRecyclerView.setAdapter(mAdapter = new ImageAdapter());
-
-        new IMGScanTask(this).execute();
 
         mFooterView = findViewById(R.id.layout_footer);
 
@@ -217,7 +213,14 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
     public void onClick(View v) {
         if (v.getId() == R.id.tv_album_folder) {
             showGalleryMenu();
-        } // TODO
+        } else if (v.getId() == R.id.image_btn_enable) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission_group.STORAGE}, REQ_STORAGE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private void showGalleryMenu() {
