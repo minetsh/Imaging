@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <me.kareluo.imaging.view.IMGView
+    <me.minetsh.imaging.view.IMGView
         android:id="@+id/image_canvas"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

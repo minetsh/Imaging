@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:padding="8dp">
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_images"
         android:layout_width="match_parent"
         android:layout_height="100dp"
@@ -43,8 +43,8 @@
                 android:id="@+id/et_max_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="6dp"
                 android:layout_marginStart="6dp"
+                android:layout_marginLeft="6dp"
                 android:inputType="numberSigned"
                 android:minEms="2"
                 android:text="@string/default_max_count" />

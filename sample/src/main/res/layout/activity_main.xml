@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginBottom="100dp"
-    tools:context="me.kareluo.imaging.sample.MainActivity">
+    tools:context="me.minetsh.imaging.sample.MainActivity">
 
     <com.facebook.drawee.view.SimpleDraweeView
         android:id="@+id/sdv_image_edit"
@@ -55,4 +55,4 @@
         app:layout_constraintStart_toStartOf="@+id/sdv_image_album"
         app:layout_constraintTop_toBottomOf="@+id/sdv_image_album" />
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
