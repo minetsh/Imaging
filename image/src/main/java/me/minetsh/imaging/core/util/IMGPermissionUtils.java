@@ -15,6 +15,15 @@ public class IMGPermissionUtils {
         return checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
     }
 
+    public static boolean isPermissionsGranted(Context context, String[] permissions) {
+        for (String permission : permissions) {
+            if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static int checkSelfPermission(Context context, String permission) {
         return ActivityCompat.checkSelfPermission(context, permission);
     }

@@ -2,9 +2,12 @@ package me.minetsh.imaging;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.RecyclerView;
@@ -29,6 +33,7 @@ import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,16 +88,14 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
 
         setContentView(R.layout.image_gallery_activity);
 
-        if (!IMGPermissionUtils.isPermissionGranted(this, Manifest.permission_group.STORAGE)) {
+        if (!IMGPermissionUtils.isPermissionGranted(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             ViewStub stub = findViewById(R.id.vs_tips_stub);
             View view = stub.inflate();
             View button = view.findViewById(R.id.image_btn_enable);
             if (button != null) {
                 button.setOnClickListener(this);
             }
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission_group.STORAGE}, REQ_STORAGE);
-        } else {
-            new IMGScanTask(this).execute();
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQ_STORAGE);
         }
 
         mGalleryMode = getIntent().getParcelableExtra(EXTRA_CHOOSE_MODE);
@@ -109,6 +112,13 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
         mAlbumFolderView.setOnClickListener(this);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (IMGPermissionUtils.isPermissionGranted(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            new IMGScanTask(this).execute();
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -214,13 +224,28 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
         if (v.getId() == R.id.tv_album_folder) {
             showGalleryMenu();
         } else if (v.getId() == R.id.image_btn_enable) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission_group.STORAGE}, REQ_STORAGE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQ_STORAGE);
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        Log.d("+++++++", Arrays.toString(grantResults));
+        if (!IMGPermissionUtils.isPermissionsGranted(this, permissions)) {
+            new AlertDialog.Builder(this)
+                    .setTitle("提示")
+                    .setMessage("请授权存储权限")
+                    .setPositiveButton("去授权", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                                    .setData(Uri.fromParts("package", getApplicationContext().getPackageName(), null)));
+                        }
+                    })
+                    .setNegativeButton("取消", null)
+                    .show();
+        }
     }
 
     private void showGalleryMenu() {
