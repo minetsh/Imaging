@@ -1,4 +1,4 @@
-package me.minetsh.imaging.gallery;
+package me.minetsh.imaging.gallery.core;
 
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;

@@ -1,4 +1,4 @@
-package me.minetsh.imaging;
+package me.minetsh.imaging.gallery;
 
 import android.Manifest;
 import android.content.Context;
@@ -16,7 +16,6 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.CheckBox;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -39,12 +38,12 @@ import java.util.Map;
 import java.util.Set;
 
 import me.minetsh.imaging.core.util.IMGPermissionUtils;
-import me.minetsh.imaging.gallery.IMGGalleryMenuWindow;
-import me.minetsh.imaging.gallery.IMGScanTask;
-import me.minetsh.imaging.gallery.IMGScanner;
-import me.minetsh.imaging.gallery.model.IMGChooseMode;
-import me.minetsh.imaging.gallery.model.IMGImageInfo;
-import me.minetsh.imaging.gallery.model.IMGImageViewModel;
+import me.minetsh.imaging.gallery.core.IMGGalleryMenuWindow;
+import me.minetsh.imaging.gallery.core.IMGScanTask;
+import me.minetsh.imaging.gallery.core.IMGScanner;
+import me.minetsh.imaging.gallery.core.model.IMGChooseMode;
+import me.minetsh.imaging.gallery.core.model.IMGImageInfo;
+import me.minetsh.imaging.gallery.core.model.IMGImageViewModel;
 import me.minetsh.imaging.widget.IMGGalleryHolderCallback;
 
 /**
@@ -76,8 +75,8 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
     private static final int REQ_STORAGE = 1;
 
     private static final int[] ATTRS = new int[]{
-            R.attr.image_gallery_span_count,
-            R.attr.image_gallery_select_shade
+            me.minetsh.imaging.R.attr.image_gallery_span_count,
+            me.minetsh.imaging.R.attr.image_gallery_select_shade
     };
 
     private static final String TAG = "IMGGalleryActivity";
@@ -86,12 +85,12 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.image_gallery_activity);
+        setContentView(me.minetsh.imaging.R.layout.image_gallery_activity);
 
         if (!IMGPermissionUtils.isPermissionGranted(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            ViewStub stub = findViewById(R.id.vs_tips_stub);
+            ViewStub stub = findViewById(me.minetsh.imaging.R.id.vs_tips_stub);
             View view = stub.inflate();
-            View button = view.findViewById(R.id.image_btn_enable);
+            View button = view.findViewById(me.minetsh.imaging.R.id.image_btn_enable);
             if (button != null) {
                 button.setOnClickListener(this);
             }
@@ -103,12 +102,12 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
             mGalleryMode = new IMGChooseMode();
         }
 
-        mRecyclerView = findViewById(R.id.rv_images);
+        mRecyclerView = findViewById(me.minetsh.imaging.R.id.rv_images);
         mRecyclerView.setAdapter(mAdapter = new ImageAdapter());
 
-        mFooterView = findViewById(R.id.layout_footer);
+        mFooterView = findViewById(me.minetsh.imaging.R.id.layout_footer);
 
-        mAlbumFolderView = findViewById(R.id.tv_album_folder);
+        mAlbumFolderView = findViewById(me.minetsh.imaging.R.id.tv_album_folder);
         mAlbumFolderView.setOnClickListener(this);
     }
 
@@ -122,13 +121,13 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.image_menu_gallery, menu);
+        getMenuInflater().inflate(me.minetsh.imaging.R.menu.image_menu_gallery, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.image_menu_done) {
+        if (item.getItemId() == me.minetsh.imaging.R.id.image_menu_done) {
             onDone();
             return true;
         }
@@ -221,9 +220,9 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
 
     @Override
     public void onClick(View v) {
-        if (v.getId() == R.id.tv_album_folder) {
+        if (v.getId() == me.minetsh.imaging.R.id.tv_album_folder) {
             showGalleryMenu();
-        } else if (v.getId() == R.id.image_btn_enable) {
+        } else if (v.getId() == me.minetsh.imaging.R.id.image_btn_enable) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQ_STORAGE);
         }
     }
@@ -267,7 +266,7 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
         @Override
         public ImageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             return new ImageViewHolder(getLayoutInflater().inflate(
-                    R.layout.image_layout_image, parent, false), this);
+                    me.minetsh.imaging.R.layout.image_layout_image, parent, false), this);
         }
 
         @Override
@@ -313,8 +312,8 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
             super(itemView);
             mCallback = callback;
 
-            mCheckBox = itemView.findViewById(R.id.cb_box);
-            mImageView = itemView.findViewById(R.id.sdv_image);
+            mCheckBox = itemView.findViewById(me.minetsh.imaging.R.id.cb_box);
+            mImageView = itemView.findViewById(me.minetsh.imaging.R.id.sdv_image);
 
             mCheckBox.setOnClickListener(this);
             itemView.setOnClickListener(this);
@@ -341,7 +340,7 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
         @Override
         public void onClick(View v) {
             if (mCallback != null) {
-                if (v.getId() == R.id.cb_box) {
+                if (v.getId() == me.minetsh.imaging.R.id.cb_box) {
                     mCallback.onCheckClick(this);
                 } else {
                     mCallback.onViewHolderClick(this);

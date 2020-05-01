@@ -7,10 +7,6 @@
     <application>
 
         <activity
-            android:name="me.minetsh.imaging.IMGGalleryActivity"
-            android:theme="@style/ImageGalleryTheme" />
-
-        <activity
             android:name="me.minetsh.imaging.IMGEditActivity"
             android:theme="@style/ImageEditTheme"
             android:windowSoftInputMode="stateAlwaysHidden" />
