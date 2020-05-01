@@ -1,4 +1,4 @@
-package me.minetsh.imaging.widget;
+package me.minetsh.imaging.gallery.widget;
 
 import androidx.recyclerview.widget.RecyclerView;
 

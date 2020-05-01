@@ -37,14 +37,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import me.minetsh.imaging.core.util.IMGPermissionUtils;
 import me.minetsh.imaging.gallery.core.IMGGalleryMenuWindow;
 import me.minetsh.imaging.gallery.core.IMGScanTask;
 import me.minetsh.imaging.gallery.core.IMGScanner;
 import me.minetsh.imaging.gallery.core.model.IMGChooseMode;
 import me.minetsh.imaging.gallery.core.model.IMGImageInfo;
 import me.minetsh.imaging.gallery.core.model.IMGImageViewModel;
-import me.minetsh.imaging.widget.IMGGalleryHolderCallback;
+import me.minetsh.imaging.gallery.utils.IMGPermissionUtils;
+import me.minetsh.imaging.gallery.widget.IMGGalleryHolderCallback;
 
 /**
  * Created by felix on 2017/11/14 上午11:30.

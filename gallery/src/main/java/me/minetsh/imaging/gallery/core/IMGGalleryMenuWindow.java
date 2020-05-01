@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.minetsh.imaging.R;
-import me.minetsh.imaging.widget.IMGViewHolderCallback;
+import me.minetsh.imaging.gallery.widget.IMGViewHolderCallback;
 
 /**
  * Created by felix on 2018/1/5 下午1:51.

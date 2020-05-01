@@ -1,4 +1,4 @@
-package me.minetsh.imaging.core.util;
+package me.minetsh.imaging.gallery.utils;
 
 import android.content.Context;
 import android.content.pm.PackageManager;

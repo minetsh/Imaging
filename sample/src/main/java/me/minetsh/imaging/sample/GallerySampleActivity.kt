@@ -15,9 +15,9 @@ import com.facebook.imagepipeline.common.ResizeOptions
 import com.facebook.imagepipeline.common.RotationOptions
 import com.facebook.imagepipeline.request.ImageRequestBuilder
 import kotlinx.android.synthetic.main.activity_gallery_sample.*
-import me.minetsh.imaging.IMGGalleryActivity
-import me.minetsh.imaging.gallery.model.IMGChooseMode
-import me.minetsh.imaging.gallery.model.IMGImageInfo
+import me.minetsh.imaging.gallery.IMGGalleryActivity
+import me.minetsh.imaging.gallery.core.model.IMGChooseMode
+import me.minetsh.imaging.gallery.core.model.IMGImageInfo
 
 /**
  * Created by felix on 2018/1/4 下午4:36.
