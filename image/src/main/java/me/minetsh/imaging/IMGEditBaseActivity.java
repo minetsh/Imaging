@@ -50,7 +50,7 @@ abstract class IMGEditBaseActivity extends Activity implements View.OnClickListe
         if (bitmap != null) {
             setContentView(R.layout.image_edit_activity);
             initViews();
-            mImgView.setImageBitmap(bitmap);
+            mImgView.setBitmap7Config(bitmap, getIMGConfig());
             onCreated();
         } else finish();
     }
@@ -158,6 +158,8 @@ abstract class IMGEditBaseActivity extends Activity implements View.OnClickListe
     }
 
     public abstract Bitmap getBitmap();
+
+    public abstract IMGConfig getIMGConfig();
 
     public abstract void onModeClick(IMGMode mode);
 

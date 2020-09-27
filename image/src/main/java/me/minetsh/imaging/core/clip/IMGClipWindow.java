@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 
+import me.minetsh.imaging.IMGConfig;
 import me.minetsh.imaging.core.util.IMGUtils;
 
 /**
@@ -14,6 +15,8 @@ import me.minetsh.imaging.core.util.IMGUtils;
  */
 
 public class IMGClipWindow implements IMGClip {
+
+    private IMGConfig config;
 
     /**
      * 裁剪区域
@@ -76,6 +79,10 @@ public class IMGClipWindow implements IMGClip {
 
     }
 
+    public void setIMGConfig(IMGConfig config) {
+        this.config = config;
+    }
+
     /**
      * 计算裁剪窗口区域
      */
@@ -101,7 +108,12 @@ public class IMGClipWindow implements IMGClip {
      */
     private void reset(float clipWidth, float clipHeight) {
         setResetting(true);
-        mFrame.set(0, 0, clipWidth, clipHeight);
+        if (config.isRoundClip()) {
+            float min = Math.min(clipWidth, clipHeight);
+            mFrame.set(0, 0, min, min);
+        } else {
+            mFrame.set(0, 0, clipWidth, clipHeight);
+        }
         IMGUtils.fitCenter(mWinFrame, mFrame, CLIP_MARGIN);
         mTargetFrame.set(mFrame);
     }
@@ -203,15 +215,22 @@ public class IMGClipWindow implements IMGClip {
         }
 
         canvas.translate(mFrame.left, mFrame.top);
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setColor(COLOR_CELL);
-        mPaint.setStrokeWidth(CLIP_THICKNESS_CELL);
-        canvas.drawLines(mCells, mPaint);
+
+        if (!config.isRoundClip()) {
+            mPaint.setStyle(Paint.Style.STROKE);
+            mPaint.setColor(COLOR_CELL);
+            mPaint.setStrokeWidth(CLIP_THICKNESS_CELL);
+            canvas.drawLines(mCells, mPaint);
+        }
 
         canvas.translate(-mFrame.left, -mFrame.top);
         mPaint.setColor(COLOR_FRAME);
         mPaint.setStrokeWidth(CLIP_THICKNESS_FRAME);
-        canvas.drawRect(mFrame, mPaint);
+        if (config.isRoundClip()) {
+            canvas.drawCircle(mFrame.left + mFrame.width() / 2, mFrame.top + mFrame.height() / 2, mFrame.width() / 2, mPaint);
+        } else {
+            canvas.drawRect(mFrame, mPaint);
+        }
 
         canvas.translate(mFrame.left, mFrame.top);
         mPaint.setColor(COLOR_CORNER);

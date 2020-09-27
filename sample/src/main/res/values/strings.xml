@@ -4,6 +4,7 @@
     <string name="edit">编辑</string>
     <string name="choose_single">单选</string>
     <string name="choose_images">选择图片</string>
+    <string name="choose_round">圆形裁剪框</string>
     <string name="default_max_count">9</string>
     <string name="choose_multi">多选</string>
 

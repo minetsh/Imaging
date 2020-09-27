@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_image_edit_sample.*
+import me.minetsh.imaging.IMGConfig
 import me.minetsh.imaging.IMGEditActivity
 import me.minetsh.imaging.IMGGalleryActivity
 import me.minetsh.imaging.gallery.model.IMGChooseMode
@@ -50,7 +51,8 @@ class ImageEditSampleActivity : AppCompatActivity() {
             startActivityForResult(
                     Intent(this, IMGEditActivity::class.java)
                             .putExtra(IMGEditActivity.EXTRA_IMAGE_URI, image.uri)
-                            .putExtra(IMGEditActivity.EXTRA_IMAGE_SAVE_PATH, mImageFile?.absolutePath),
+                            .putExtra(IMGEditActivity.EXTRA_IMAGE_SAVE_PATH, mImageFile?.absolutePath)
+                            .putExtra(IMGEditActivity.EXTRA_IMAGE_CONFIG, IMGConfig.Builder().roundClip(cb_round.isChecked).build()),
                     REQ_IMAGE_EDIT
             )
         }
