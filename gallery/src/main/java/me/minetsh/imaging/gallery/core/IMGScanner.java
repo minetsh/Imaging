@@ -1,4 +1,4 @@
-package me.minetsh.imaging.gallery;
+package me.minetsh.imaging.gallery.core;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -8,13 +8,13 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 
-import me.minetsh.imaging.gallery.model.IMGImageViewModel;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import me.minetsh.imaging.gallery.core.model.IMGImageViewModel;
 
 /**
  * Created by felix on 2018/1/4 下午1:27.

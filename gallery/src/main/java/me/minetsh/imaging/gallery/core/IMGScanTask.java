@@ -1,13 +1,13 @@
-package me.minetsh.imaging.gallery;
+package me.minetsh.imaging.gallery.core;
 
 import android.os.AsyncTask;
-
-import me.minetsh.imaging.IMGGalleryActivity;
-import me.minetsh.imaging.gallery.model.IMGImageViewModel;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Map;
+
+import me.minetsh.imaging.gallery.IMGGalleryActivity;
+import me.minetsh.imaging.gallery.core.model.IMGImageViewModel;
 
 /**
  * Created by felix on 2018/1/4 下午2:26.

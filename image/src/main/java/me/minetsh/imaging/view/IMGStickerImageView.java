@@ -30,7 +30,7 @@ public class IMGStickerImageView extends IMGStickerView {
     @Override
     public View onCreateContentView(Context context) {
         mImageView = new ImageView(context);
-        mImageView.setImageResource(R.mipmap.ic_launcher);
+        mImageView.setImageResource(R.mipmap.image_ic_adjust);
         return mImageView;
     }
 }

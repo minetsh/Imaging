@@ -8,9 +8,9 @@ import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_image_edit_sample.*
 import me.minetsh.imaging.IMGConfig
 import me.minetsh.imaging.IMGEditActivity
-import me.minetsh.imaging.IMGGalleryActivity
-import me.minetsh.imaging.gallery.model.IMGChooseMode
-import me.minetsh.imaging.gallery.model.IMGImageInfo
+import me.minetsh.imaging.gallery.IMGGalleryActivity
+import me.minetsh.imaging.gallery.core.model.IMGChooseMode
+import me.minetsh.imaging.gallery.core.model.IMGImageInfo
 import java.io.File
 import java.util.*
 

@@ -1,4 +1,4 @@
-package me.minetsh.imaging.gallery.model;
+package me.minetsh.imaging.gallery.core.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
