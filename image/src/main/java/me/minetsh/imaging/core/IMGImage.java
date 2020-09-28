@@ -666,15 +666,7 @@ public class IMGImage {
         if (mMode == IMGMode.CLIP) {
             mClipWin.setShowShade(false);
             if (mAnchor != null) {
-                if (config.isRoundClip()) {
-                    if (!mAnchor.isCorners()) {
-                        return null;
-                    }
-                    float min = Math.min(dx, dy);
-                    mClipWin.onScroll(mAnchor, min, min);
-                } else {
-                    mClipWin.onScroll(mAnchor, dx, dy);
-                }
+                mClipWin.onScroll(mAnchor, dx, dy);
 
                 RectF clipFrame = new RectF();
                 M.setRotate(getRotate(), mClipFrame.centerX(), mClipFrame.centerY());

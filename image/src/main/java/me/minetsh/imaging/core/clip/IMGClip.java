@@ -110,10 +110,6 @@ public interface IMGClip {
             frame.set(theFrame[0], theFrame[2], theFrame[1], theFrame[3]);
         }
 
-        public boolean isCorners() {
-            return this == LEFT_TOP || this == LEFT_BOTTOM || this == RIGHT_TOP || this == RIGHT_BOTTOM;
-        }
-
         public static float revise(float v, float min, float max) {
             return Math.min(Math.max(v, min), max);
         }
