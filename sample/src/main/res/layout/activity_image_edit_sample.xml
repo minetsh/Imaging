@@ -37,4 +37,10 @@
         android:layout_height="wrap_content"
         android:text="@string/choose_images" />
 
+    <CheckBox
+        android:id="@+id/cb_round"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/choose_round" />
+
 </LinearLayout>

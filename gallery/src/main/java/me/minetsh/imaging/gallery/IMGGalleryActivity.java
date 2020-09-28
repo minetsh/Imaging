@@ -1,4 +1,4 @@
-package me.minetsh.imaging;
+package me.minetsh.imaging.gallery;
 
 import android.Manifest;
 import android.content.Context;
@@ -16,7 +16,6 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.CheckBox;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -39,13 +38,13 @@ import java.util.Map;
 import java.util.Set;
 
 import me.minetsh.imaging.core.util.IMGPermissionUtils;
-import me.minetsh.imaging.gallery.IMGGalleryMenuWindow;
-import me.minetsh.imaging.gallery.IMGScanTask;
-import me.minetsh.imaging.gallery.IMGScanner;
-import me.minetsh.imaging.gallery.model.IMGChooseMode;
-import me.minetsh.imaging.gallery.model.IMGImageInfo;
-import me.minetsh.imaging.gallery.model.IMGImageViewModel;
-import me.minetsh.imaging.widget.IMGGalleryHolderCallback;
+import me.minetsh.imaging.gallery.core.IMGGalleryMenuWindow;
+import me.minetsh.imaging.gallery.core.IMGScanTask;
+import me.minetsh.imaging.gallery.core.IMGScanner;
+import me.minetsh.imaging.gallery.core.model.IMGChooseMode;
+import me.minetsh.imaging.gallery.core.model.IMGImageInfo;
+import me.minetsh.imaging.gallery.core.model.IMGImageViewModel;
+import me.minetsh.imaging.gallery.widget.IMGGalleryHolderCallback;
 
 /**
  * Created by felix on 2017/11/14 上午11:30.

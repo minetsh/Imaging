@@ -6,16 +6,16 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 import me.minetsh.imaging.core.IMGMode;
 import me.minetsh.imaging.core.IMGText;
 import me.minetsh.imaging.core.file.IMGAssetFileDecoder;
 import me.minetsh.imaging.core.file.IMGDecoder;
 import me.minetsh.imaging.core.file.IMGFileDecoder;
 import me.minetsh.imaging.core.util.IMGUtils;
-
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 /**
  * Created by felix on 2017/11/14 下午2:26.
@@ -30,6 +30,8 @@ public class IMGEditActivity extends IMGEditBaseActivity {
     public static final String EXTRA_IMAGE_URI = "IMAGE_URI";
 
     public static final String EXTRA_IMAGE_SAVE_PATH = "IMAGE_SAVE_PATH";
+
+    public static final String EXTRA_IMAGE_CONFIG = "IMAGE_CONFIG";
 
     @Override
     public void onCreated() {
@@ -89,6 +91,15 @@ public class IMGEditActivity extends IMGEditBaseActivity {
         }
 
         return bitmap;
+    }
+
+    @Override
+    public IMGConfig getIMGConfig() {
+        IMGConfig config = getIntent().getParcelableExtra(EXTRA_IMAGE_CONFIG);
+        if (config == null) {
+            config = new IMGConfig.Builder().build();
+        }
+        return config;
     }
 
     @Override

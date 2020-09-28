@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
 
+import me.minetsh.imaging.IMGConfig;
 import me.minetsh.imaging.core.IMGImage;
 import me.minetsh.imaging.core.IMGMode;
 import me.minetsh.imaging.core.IMGPath;
@@ -97,8 +98,8 @@ public class IMGView extends FrameLayout implements Runnable, ScaleGestureDetect
         mSGDetector = new ScaleGestureDetector(context, this);
     }
 
-    public void setImageBitmap(Bitmap image) {
-        mImage.setBitmap(image);
+    public void setBitmap7Config(Bitmap image, IMGConfig config) {
+        mImage.setBitmap7Config(image, config);
         invalidate();
     }
 

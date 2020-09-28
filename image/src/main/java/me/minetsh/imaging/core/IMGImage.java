@@ -12,14 +12,15 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import me.minetsh.imaging.IMGConfig;
 import me.minetsh.imaging.core.clip.IMGClip;
 import me.minetsh.imaging.core.clip.IMGClipWindow;
 import me.minetsh.imaging.core.homing.IMGHoming;
 import me.minetsh.imaging.core.sticker.IMGSticker;
 import me.minetsh.imaging.core.util.IMGUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by felix on 2017/11/21 下午10:03.
@@ -30,6 +31,8 @@ public class IMGImage {
     private static final String TAG = "IMGImage";
 
     private Bitmap mImage, mMosaicImage;
+
+    private IMGConfig config;
 
     /**
      * 完整图片边框
@@ -42,6 +45,11 @@ public class IMGImage {
     private RectF mClipFrame = new RectF();
 
     private RectF mTempClipFrame = new RectF();
+
+    /**
+     * 图片显示区域
+     */
+    private Path mClipPath = new Path();
 
     /**
      * 裁剪模式前状态备份
@@ -148,12 +156,15 @@ public class IMGImage {
         }
     }
 
-    public void setBitmap(Bitmap bitmap) {
+    public void setBitmap7Config(Bitmap bitmap, IMGConfig config) {
         if (bitmap == null || bitmap.isRecycled()) {
             return;
         }
 
         this.mImage = bitmap;
+        this.config = config;
+
+        this.mClipWin.setIMGConfig(config);
 
         // 清空马赛克图层
         if (mMosaicImage != null) {
@@ -516,9 +527,23 @@ public class IMGImage {
     }
 
     public void onDrawImage(Canvas canvas) {
+        mClipPath.reset();
+        if (mClipWin.isClipping()) {
+            mClipPath.addRect(mFrame, Path.Direction.CCW);
+        } else {
+            boolean eq = Float.valueOf(mFrame.left).equals(mClipFrame.left)
+                    || Float.valueOf(mFrame.top).equals(mClipFrame.top)
+                    || Float.valueOf(mFrame.right).equals(mClipFrame.right)
+                    || Float.valueOf(mFrame.bottom).equals(mClipFrame.bottom);
 
+            if (config.isRoundClip() && !eq) {
+                mClipPath.addCircle(mClipFrame.centerX(), mClipFrame.centerY(), mClipFrame.width() / 2, Path.Direction.CCW);
+            } else {
+                mClipPath.addRect(mClipFrame, Path.Direction.CCW);
+            }
+        }
         // 裁剪区域
-        canvas.clipRect(mClipWin.isClipping() ? mFrame : mClipFrame);
+        canvas.clipPath(mClipPath);
 
         // 绘制图片
         canvas.drawBitmap(mImage, null, mFrame, null);
@@ -598,7 +623,11 @@ public class IMGImage {
         if (mMode == IMGMode.CLIP && isSteady) {
             mShade.reset();
             mShade.addRect(mFrame.left - 2, mFrame.top - 2, mFrame.right + 2, mFrame.bottom + 2, Path.Direction.CW);
-            mShade.addRect(mClipFrame, Path.Direction.CCW);
+            if (config.isRoundClip()) {
+                mShade.addCircle(mClipFrame.centerX(), mClipFrame.centerY(), mClipFrame.width() / 2, Path.Direction.CCW);
+            } else {
+                mShade.addRect(mClipFrame, Path.Direction.CCW);
+            }
             canvas.drawPath(mShade, mShadePaint);
         }
     }

@@ -1,0 +1,9 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="me.minetsh.imaging.gallery">
+
+    <application>
+        <activity
+            android:name=".IMGGalleryActivity"
+            android:theme="@style/ImageGalleryTheme" />
+    </application>
+</manifest>
