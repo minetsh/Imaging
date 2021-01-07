@@ -125,8 +125,10 @@ public class IMGView extends FrameLayout implements Runnable, ScaleGestureDetect
     private void onHoming() {
         invalidate();
         stopHoming();
-        startHoming(mImage.getStartHoming(getScrollX(), getScrollY()),
-                mImage.getEndHoming(getScrollX(), getScrollY()));
+        if (!mImage.getFrame().isEmpty()) {
+            startHoming(mImage.getStartHoming(getScrollX(), getScrollY()),
+                    mImage.getEndHoming(getScrollX(), getScrollY()));
+        }
     }
 
     private void startHoming(IMGHoming sHoming, IMGHoming eHoming) {
@@ -299,6 +301,7 @@ public class IMGView extends FrameLayout implements Runnable, ScaleGestureDetect
         if (changed) {
             mImage.onWindowChanged(right - left, bottom - top);
         }
+        onHoming();
     }
 
     public <V extends View & IMGSticker> void addStickerView(V stickerView, LayoutParams params) {

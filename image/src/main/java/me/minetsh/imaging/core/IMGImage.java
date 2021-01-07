@@ -152,7 +152,7 @@ public class IMGImage {
         if (bitmap == null || bitmap.isRecycled()) {
             return;
         }
-
+        release();
         this.mImage = bitmap;
 
         // 清空马赛克图层
@@ -772,14 +772,6 @@ public class IMGImage {
     public void release() {
         if (mImage != null && !mImage.isRecycled()) {
             mImage.recycle();
-        }
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        if (DEFAULT_IMAGE != null) {
-            DEFAULT_IMAGE.recycle();
         }
     }
 }
