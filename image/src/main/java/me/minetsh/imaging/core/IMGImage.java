@@ -95,7 +95,7 @@ public class IMGImage {
     private IMGSticker mForeSticker;
 
     /**
-     * 为被选中贴片
+     * 未被选中贴片
      */
     private List<IMGSticker> mBackStickers = new ArrayList<>();
 
@@ -585,6 +585,7 @@ public class IMGImage {
                 M.setTranslate(sticker.getX(), sticker.getY());
                 M.postScale(sticker.getScale(), sticker.getScale(), tPivotX, tPivotY);
                 M.postRotate(sticker.getRotation(), tPivotX, tPivotY);
+                M.postRotate(getRotate(), mClipFrame.centerX(), mClipFrame.centerY()); //增加图片内容的旋转角度，跟着内容旋转
 
                 canvas.concat(M);
                 sticker.onSticker(canvas);
@@ -666,6 +667,8 @@ public class IMGImage {
     public void rotate(int rotate) {
         mTargetRotate = Math.round((mRotate + rotate) / 90f) * 90;
         mClipWin.reset(mClipFrame, getTargetRotate());
+
+        moveToBackground(mForeSticker); //将选中的贴片放回，交给mBackStickers统一随图片旋转
     }
 
     public float getRotate() {
