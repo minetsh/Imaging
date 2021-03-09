@@ -4,12 +4,23 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
+
     <application>
 
         <activity
-            android:name="me.minetsh.imaging.IMGEditActivity"
-            android:theme="@style/ImageEditTheme"
+            android:name=".IMGEditActivity"
             android:windowSoftInputMode="stateAlwaysHidden" />
+
+        <provider
+            android:name=".core.file.IMGProvider"
+            android:authorities="${applicationId}.app.file.provider"
+            android:exported="false"
+            android:grantUriPermissions="true"
+            android:multiprocess="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/image_provider" />
+        </provider>
 
     </application>
 

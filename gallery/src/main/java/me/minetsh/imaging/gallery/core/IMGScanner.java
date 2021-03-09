@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -57,6 +58,8 @@ public class IMGScanner {
                     MediaStore.Images.Media.DATE_MODIFIED + " desc"
             );
 
+            Log.i("++++", "" + cursor);
+
             List<IMGImageViewModel> allInfos = new ArrayList<>();
             images.put(ALL_IMAGES, allInfos);
             if (cursor == null) {
@@ -68,9 +71,13 @@ public class IMGScanner {
                         cursor.getColumnIndex(MediaStore.Images.Media.SIZE)
                 );
 
+                Log.i("++++", "" + size);
+
                 String path = cursor.getString(
                         cursor.getColumnIndex(MediaStore.Images.Media.DATA)
                 );
+
+                Log.i("++++", "" + path);
 
                 if (size == 0 || TextUtils.isEmpty(path)) {
                     continue;

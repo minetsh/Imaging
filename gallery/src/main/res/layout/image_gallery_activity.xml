@@ -15,7 +15,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-            app:spanCount="?attr/image_gallery_span_count" />
+            app:spanCount="3" />
 
         <FrameLayout
             android:id="@+id/layout_footer"

@@ -10,9 +10,6 @@ android {
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
-
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
     }
 
     buildTypes {
@@ -25,13 +22,6 @@ android {
 }
 
 dependencies {
-
-//    implementation "androidx.appcompat:appcompat:1.1.0"
-//    implementation "androidx.recyclerview:recyclerview:1.1.0"
-
-//    implementation 'com.facebook.fresco:fresco:1.8.1'
-    //    compile 'com.facebook.fresco:animated-gif:1.7.1'
-    //
-    //    compile 'com.facebook.fresco:animated-webp:1.7.1'
-    //    compile 'com.facebook.fresco:webpsupport:1.7.1'
+    implementation "androidx.multidex:multidex:2.0.1"
+    implementation 'androidx.core:core:1.5.0-alpha05'
 }

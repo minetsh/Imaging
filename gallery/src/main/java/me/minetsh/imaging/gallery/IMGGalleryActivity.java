@@ -75,8 +75,8 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
     private static final int REQ_STORAGE = 1;
 
     private static final int[] ATTRS = new int[]{
-            me.minetsh.imaging.R.attr.image_gallery_span_count,
-            me.minetsh.imaging.R.attr.image_gallery_select_shade
+            R.attr.image_gallery_span_count,
+            R.attr.image_gallery_select_shade
     };
 
     private static final String TAG = "IMGGalleryActivity";
@@ -85,12 +85,12 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(me.minetsh.imaging.R.layout.image_gallery_activity);
+        setContentView(R.layout.image_gallery_activity);
 
         if (!IMGPermissionUtils.isPermissionGranted(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            ViewStub stub = findViewById(me.minetsh.imaging.R.id.vs_tips_stub);
+            ViewStub stub = findViewById(R.id.vs_tips_stub);
             View view = stub.inflate();
-            View button = view.findViewById(me.minetsh.imaging.R.id.image_btn_enable);
+            View button = view.findViewById(R.id.image_btn_enable);
             if (button != null) {
                 button.setOnClickListener(this);
             }
@@ -102,12 +102,12 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
             mGalleryMode = new IMGChooseMode();
         }
 
-        mRecyclerView = findViewById(me.minetsh.imaging.R.id.rv_images);
+        mRecyclerView = findViewById(R.id.rv_images);
         mRecyclerView.setAdapter(mAdapter = new ImageAdapter());
 
-        mFooterView = findViewById(me.minetsh.imaging.R.id.layout_footer);
+        mFooterView = findViewById(R.id.layout_footer);
 
-        mAlbumFolderView = findViewById(me.minetsh.imaging.R.id.tv_album_folder);
+        mAlbumFolderView = findViewById(R.id.tv_album_folder);
         mAlbumFolderView.setOnClickListener(this);
     }
 
@@ -121,13 +121,13 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(me.minetsh.imaging.R.menu.image_menu_gallery, menu);
+        getMenuInflater().inflate(R.menu.image_menu_gallery, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == me.minetsh.imaging.R.id.image_menu_done) {
+        if (item.getItemId() == R.id.image_menu_done) {
             onDone();
             return true;
         }
@@ -135,20 +135,19 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
     }
 
     public void onImages(Map<String, List<IMGImageViewModel>> images) {
+        Log.i("++++x", "" + images.size());
         mImages = images;
-        if (images != null) {
-            mAdapter.setModels(images.get(IMGScanner.ALL_IMAGES));
-            mAdapter.notifyDataSetChanged();
+        mAdapter.setModels(images.get(IMGScanner.ALL_IMAGES));
+        mAdapter.notifyDataSetChanged();
 
-            IMGGalleryMenuWindow window = getGalleryMenuWindow();
-            Set<String> keys = images.keySet();
-            List<String> items = new ArrayList<>(keys);
-            if (!items.isEmpty() && !IMGScanner.ALL_IMAGES.equals(items.get(0))) {
-                items.remove(IMGScanner.ALL_IMAGES);
-                items.add(0, IMGScanner.ALL_IMAGES);
-            }
-            window.setMenuItems(items);
+        IMGGalleryMenuWindow window = getGalleryMenuWindow();
+        Set<String> keys = images.keySet();
+        List<String> items = new ArrayList<>(keys);
+        if (!items.isEmpty() && !IMGScanner.ALL_IMAGES.equals(items.get(0))) {
+            items.remove(IMGScanner.ALL_IMAGES);
+            items.add(0, IMGScanner.ALL_IMAGES);
         }
+        window.setMenuItems(items);
     }
 
     public void onQuicklyImages(List<IMGImageViewModel> images) {
@@ -220,9 +219,9 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
 
     @Override
     public void onClick(View v) {
-        if (v.getId() == me.minetsh.imaging.R.id.tv_album_folder) {
+        if (v.getId() == R.id.tv_album_folder) {
             showGalleryMenu();
-        } else if (v.getId() == me.minetsh.imaging.R.id.image_btn_enable) {
+        } else if (v.getId() == R.id.image_btn_enable) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQ_STORAGE);
         }
     }
@@ -266,11 +265,12 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
         @Override
         public ImageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             return new ImageViewHolder(getLayoutInflater().inflate(
-                    me.minetsh.imaging.R.layout.image_layout_image, parent, false), this);
+                    R.layout.image_layout_image, parent, false), this);
         }
 
         @Override
         public void onBindViewHolder(ImageViewHolder holder, int position) {
+            Log.i("++++", "" + models.get(position).toString());
             holder.update(models.get(position), mGalleryMode);
         }
 
@@ -312,8 +312,8 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
             super(itemView);
             mCallback = callback;
 
-            mCheckBox = itemView.findViewById(me.minetsh.imaging.R.id.cb_box);
-            mImageView = itemView.findViewById(me.minetsh.imaging.R.id.sdv_image);
+            mCheckBox = itemView.findViewById(R.id.cb_box);
+            mImageView = itemView.findViewById(R.id.sdv_image);
 
             mCheckBox.setOnClickListener(this);
             itemView.setOnClickListener(this);
@@ -323,6 +323,7 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
             mCheckBox.setChecked(model.isSelected());
             mCheckBox.setVisibility(mode.isSingleChoose() ? View.GONE : View.VISIBLE);
 
+            Log.i("++++", model.getUri().toString());
             ImageRequest request = ImageRequestBuilder.newBuilderWithSource(model.getUri())
                     .setLocalThumbnailPreviewsEnabled(true)
                     .setResizeOptions(new ResizeOptions(300, 300))
@@ -340,7 +341,7 @@ public class IMGGalleryActivity extends AppCompatActivity implements View.OnClic
         @Override
         public void onClick(View v) {
             if (mCallback != null) {
-                if (v.getId() == me.minetsh.imaging.R.id.cb_box) {
+                if (v.getId() == R.id.cb_box) {
                     mCallback.onCheckClick(this);
                 } else {
                     mCallback.onViewHolderClick(this);

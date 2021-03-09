@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_image_edit_sample.*
 import me.minetsh.imaging.IMGEditActivity
@@ -26,8 +27,18 @@ class ImageEditSampleActivity : AppCompatActivity() {
         setContentView(R.layout.activity_image_edit_sample)
 
         btn_choose_image.setOnClickListener {
-            chooseImages()
+//            chooseImages()
+            val intent = Intent(this, IMGEditActivity::class.java)
+                    .putExtra(IMGEditActivity.EXTRA_IMAGE_URI, Uri.parse("asset:///g.jpeg"))
+                    .putExtra(IMGEditActivity.EXTRA_IMAGE_SAVE_PATH, mImageFile?.absolutePath)
+
+
+
+            startActivity(intent)
         }
+
+
+        Log.i("+++++", "ImageEditSampleActivity")
     }
 
     private fun chooseImages() {
@@ -41,18 +52,21 @@ class ImageEditSampleActivity : AppCompatActivity() {
 
     private fun onChooseImages(images: List<IMGImageInfo>?) {
         val image = images?.get(0)
+        Log.i("+++xx", image.toString())
         if (image != null) {
 
             sdv_image.setImageURI(image.uri, null)
 
             mImageFile = File(cacheDir, UUID.randomUUID().toString() + ".jpg")
 
-            startActivityForResult(
-                    Intent(this, IMGEditActivity::class.java)
-                            .putExtra(IMGEditActivity.EXTRA_IMAGE_URI, image.uri)
-                            .putExtra(IMGEditActivity.EXTRA_IMAGE_SAVE_PATH, mImageFile?.absolutePath),
-                    REQ_IMAGE_EDIT
-            )
+            Log.i("+++xx", mImageFile.toString())
+            val intent = Intent(this, IMGEditActivity::class.java)
+                    .putExtra(IMGEditActivity.EXTRA_IMAGE_URI, image.uri)
+                    .putExtra(IMGEditActivity.EXTRA_IMAGE_SAVE_PATH, mImageFile?.absolutePath)
+
+
+
+            startActivity(intent)
         }
     }
 
@@ -63,6 +77,7 @@ class ImageEditSampleActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             REQ_IMAGE_CHOOSE -> {
+                Log.i("+++++", "" + requestCode)
                 if (resultCode == Activity.RESULT_OK) {
                     onChooseImages(IMGGalleryActivity.getImageInfos(data))
                 }

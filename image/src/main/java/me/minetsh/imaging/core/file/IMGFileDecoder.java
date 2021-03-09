@@ -5,6 +5,8 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import androidx.core.content.FileProvider;
+
 import java.io.File;
 
 /**
@@ -31,7 +33,7 @@ public class IMGFileDecoder extends IMGDecoder {
 
         File file = new File(path);
         if (file.exists()) {
-            return BitmapFactory.decodeFile(path, options);
+            return BitmapFactory.decodeFile(file.getAbsolutePath(), options);
         }
 
         return null;

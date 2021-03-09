@@ -114,4 +114,16 @@ public class IMGImageInfo implements Parcelable {
         dest.writeByte((byte) (isEdited ? 1 : 0));
         dest.writeParcelable(uri, flags);
     }
+
+    @Override
+    public String toString() {
+        return "IMGImageInfo{" +
+                "size=" + size +
+                ", width=" + width +
+                ", height=" + height +
+                ", isOriginal=" + isOriginal +
+                ", isEdited=" + isEdited +
+                ", uri=" + uri +
+                '}';
+    }
 }

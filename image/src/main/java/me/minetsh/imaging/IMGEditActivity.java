@@ -4,11 +4,14 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 
 import me.minetsh.imaging.core.IMGMode;
 import me.minetsh.imaging.core.IMGText;
 import me.minetsh.imaging.core.file.IMGAssetFileDecoder;
+import me.minetsh.imaging.core.file.IMGContentDecoder;
 import me.minetsh.imaging.core.file.IMGDecoder;
 import me.minetsh.imaging.core.file.IMGFileDecoder;
 import me.minetsh.imaging.core.util.IMGUtils;
@@ -30,6 +33,12 @@ public class IMGEditActivity extends IMGEditBaseActivity {
     public static final String EXTRA_IMAGE_URI = "IMAGE_URI";
 
     public static final String EXTRA_IMAGE_SAVE_PATH = "IMAGE_SAVE_PATH";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.i("+++xx", "onCreate");
+    }
 
     @Override
     public void onCreated() {
@@ -57,7 +66,7 @@ public class IMGEditActivity extends IMGEditBaseActivity {
                     decoder = new IMGAssetFileDecoder(this, uri);
                     break;
                 case "file":
-                    decoder = new IMGFileDecoder(uri);
+                    decoder = new IMGContentDecoder(this, uri);
                     break;
             }
         }
@@ -67,7 +76,7 @@ public class IMGEditActivity extends IMGEditBaseActivity {
         }
 
         BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = 1;
+        options.inSampleSize = 2;
         options.inJustDecodeBounds = true;
 
         decoder.decode(options);

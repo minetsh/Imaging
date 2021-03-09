@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -41,6 +42,8 @@ class GallerySampleActivity : AppCompatActivity() {
         btn_custom.setOnClickListener {
             chooseImagesFromCustomAlbum()
         }
+
+        Log.i("++++", "hello")
     }
 
     private fun chooseImages() {
@@ -61,19 +64,22 @@ class GallerySampleActivity : AppCompatActivity() {
         builder.setSingleChoose(rg_modes.checkedRadioButtonId == R.id.rb_single)
         builder.setMaxChooseCount(et_max_count.text.toString().toInt())
 
+        Log.i("++++", "a" )
         startActivityForResult(
                 IMGGalleryActivity.newIntent(this, builder.build())
-                        .setClass(this, CustomGalleryActivity::class.java),
+                        .setClass(this, IMGGalleryActivity::class.java),
                 REQ_IMAGE_CHOOSE
         )
     }
 
     private fun onChooseImages(images: List<IMGImageInfo>?) {
+        Log.i("++++++", "" + images?.size )
         mAdapter?.mImages = images
         mAdapter?.notifyDataSetChanged()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        Log.i("++++", "" + requestCode)
         when (requestCode) {
             REQ_IMAGE_CHOOSE -> {
                 if (resultCode == Activity.RESULT_OK) {
