@@ -37,7 +37,6 @@ public class IMGEditActivity extends IMGEditBaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i("+++xx", "onCreate");
     }
 
     @Override
@@ -66,7 +65,7 @@ public class IMGEditActivity extends IMGEditBaseActivity {
                     decoder = new IMGAssetFileDecoder(this, uri);
                     break;
                 case "file":
-                    decoder = new IMGContentDecoder(this, uri);
+                    decoder = new IMGFileDecoder(uri);
                     break;
             }
         }
@@ -184,6 +183,11 @@ public class IMGEditActivity extends IMGEditBaseActivity {
     @Override
     public void onRotateClipClick() {
         mImgView.doRotate();
+    }
+
+    @Override
+    public void onClipRatioClick(int w, int h) {
+        // TODO
     }
 
     @Override

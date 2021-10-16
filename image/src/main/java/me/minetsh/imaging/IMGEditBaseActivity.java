@@ -97,6 +97,8 @@ abstract class IMGEditBaseActivity extends Activity implements View.OnClickListe
             onResetClipClick();
         } else if (vid == R.id.ib_clip_rotate) {
             onRotateClipClick();
+        } else if (vid == R.id.ib_clip_1v1) {
+
         }
     }
 
@@ -174,6 +176,8 @@ abstract class IMGEditBaseActivity extends Activity implements View.OnClickListe
     public abstract void onResetClipClick();
 
     public abstract void onRotateClipClick();
+
+    public abstract void onClipRatioClick(int w, int h);
 
     public abstract void onColorChanged(int checkedColor);
 

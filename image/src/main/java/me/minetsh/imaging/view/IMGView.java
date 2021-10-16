@@ -10,7 +10,10 @@ import android.graphics.CornerPathEffect;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
+import android.graphics.Xfermode;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -229,6 +232,7 @@ public class IMGView extends FrameLayout implements Runnable, ScaleGestureDetect
         if (mImage.getMode() == IMGMode.DOODLE && !mPen.isEmpty()) {
             mDoodlePaint.setColor(mPen.getColor());
             mDoodlePaint.setStrokeWidth(IMGPath.BASE_DOODLE_WIDTH * mImage.getScale());
+            mDoodlePaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
             canvas.save();
             RectF frame = mImage.getClipFrame();
             canvas.rotate(-mImage.getRotate(), frame.centerX(), frame.centerY());
