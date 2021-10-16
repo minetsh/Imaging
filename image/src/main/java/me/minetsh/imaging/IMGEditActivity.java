@@ -6,19 +6,17 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
-
-import me.minetsh.imaging.core.IMGMode;
-import me.minetsh.imaging.core.IMGText;
-import me.minetsh.imaging.core.file.IMGAssetFileDecoder;
-import me.minetsh.imaging.core.file.IMGContentDecoder;
-import me.minetsh.imaging.core.file.IMGDecoder;
-import me.minetsh.imaging.core.file.IMGFileDecoder;
-import me.minetsh.imaging.core.util.IMGUtils;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import me.minetsh.imaging.core.IMGMode;
+import me.minetsh.imaging.core.IMGText;
+import me.minetsh.imaging.core.file.IMGAssetFileDecoder;
+import me.minetsh.imaging.core.file.IMGDecoder;
+import me.minetsh.imaging.core.file.IMGFileDecoder;
+import me.minetsh.imaging.core.util.IMGUtils;
 
 /**
  * Created by felix on 2017/11/14 下午2:26.
@@ -41,7 +39,6 @@ public class IMGEditActivity extends IMGEditBaseActivity {
 
     @Override
     public void onCreated() {
-
     }
 
     @Override

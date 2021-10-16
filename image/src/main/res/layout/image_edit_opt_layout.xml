@@ -88,7 +88,6 @@
                     android:layout_width="@dimen/image_color"
                     android:layout_height="@dimen/image_color"
                     android:layout_margin="@dimen/image_color_margin"
-
                     app:image_color="@color/image_color_white" />
 
                 <me.minetsh.imaging.view.IMGColorRadio
@@ -109,6 +108,15 @@
                     android:layout_margin="@dimen/image_color_margin"
                     app:image_color="@color/image_color_blue" />
 
+                <RadioButton
+                    android:id="@+id/image_eraser"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:button="@drawable/image_btn_eraser"
+                    android:gravity="center"
+                    android:onClick="onClick"
+                    android:textColor="#FFF" />
+
             </me.minetsh.imaging.view.IMGColorGroup>
 
             <TextView
@@ -125,6 +133,8 @@
             android:id="@+id/btn_undo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/image_undo"
+            android:layout_marginLeft="@dimen/image_undo"
             android:background="@null"
             android:contentDescription="@string/image_undo"
             android:onClick="onClick"

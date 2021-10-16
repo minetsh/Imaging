@@ -5,6 +5,9 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.util.Log;
 
 /**
  * Created by felix on 2017/11/22 下午6:13.
@@ -23,6 +26,10 @@ public class IMGPath {
     public static final float BASE_DOODLE_WIDTH = 20f;
 
     public static final float BASE_MOSAIC_WIDTH = 72f;
+
+    public static final PorterDuffXfermode pMode = new PorterDuffXfermode(PorterDuff.Mode.DST_OUT);
+
+    public static final PorterDuffXfermode defaultMode = new PorterDuffXfermode(PorterDuff.Mode.SRC_OVER);
 
     public IMGPath() {
         this(new Path());
@@ -86,6 +93,12 @@ public class IMGPath {
         if (mode == IMGMode.DOODLE) {
             paint.setColor(color);
             paint.setStrokeWidth(BASE_DOODLE_WIDTH);
+            if (color == Color.TRANSPARENT) {
+                paint.setColor(Color.BLACK);
+                paint.setXfermode(pMode);
+            } else {
+                paint.setXfermode(defaultMode);
+            }
             // rewind
             canvas.drawPath(path, paint);
         }

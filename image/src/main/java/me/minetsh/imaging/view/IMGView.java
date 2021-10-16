@@ -227,12 +227,18 @@ public class IMGView extends FrameLayout implements Runnable, ScaleGestureDetect
             mImage.onDrawMosaic(canvas, count);
         }
 
+        int index = canvas.saveLayer(mImage.getFrame(), null, Canvas.ALL_SAVE_FLAG);
         // 涂鸦
         mImage.onDrawDoodles(canvas);
         if (mImage.getMode() == IMGMode.DOODLE && !mPen.isEmpty()) {
             mDoodlePaint.setColor(mPen.getColor());
+            if (mPen.getColor() == Color.TRANSPARENT) {
+                mDoodlePaint.setColor(Color.BLACK);
+                mDoodlePaint.setXfermode(IMGPath.pMode);
+            } else {
+                mDoodlePaint.setXfermode(IMGPath.defaultMode);
+            }
             mDoodlePaint.setStrokeWidth(IMGPath.BASE_DOODLE_WIDTH * mImage.getScale());
-            mDoodlePaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
             canvas.save();
             RectF frame = mImage.getClipFrame();
             canvas.rotate(-mImage.getRotate(), frame.centerX(), frame.centerY());
@@ -240,6 +246,7 @@ public class IMGView extends FrameLayout implements Runnable, ScaleGestureDetect
             canvas.drawPath(mPen.getPath(), mDoodlePaint);
             canvas.restore();
         }
+        canvas.restoreToCount(index);
 
         // TODO
         if (mImage.isFreezing()) {

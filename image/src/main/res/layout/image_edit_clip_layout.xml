@@ -29,39 +29,39 @@
                 android:onClick="onClick"
                 android:src="@drawable/image_btn_rotate" />
 
-            <ImageButton
-                android:id="@+id/ib_clip_1v1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginLeft="20dp"
-                android:background="@null"
-                android:contentDescription="@string/image_rotate"
-                android:onClick="onClick"
-                android:src="@drawable/image_btn_rotate" />
+<!--            <ImageButton-->
+<!--                android:id="@+id/ib_clip_1v1"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginStart="20dp"-->
+<!--                android:layout_marginLeft="20dp"-->
+<!--                android:background="@null"-->
+<!--                android:contentDescription="@string/image_rotate"-->
+<!--                android:onClick="onClick"-->
+<!--                android:src="@drawable/image_btn_rotate" />-->
 
-            <ImageButton
-                android:id="@+id/ib_clip_4v3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginLeft="20dp"
-                android:background="@null"
-                android:contentDescription="@string/image_rotate"
-                android:onClick="onClick"
-                android:src="@drawable/image_btn_rotate" />
+<!--            <ImageButton-->
+<!--                android:id="@+id/ib_clip_4v3"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginStart="20dp"-->
+<!--                android:layout_marginLeft="20dp"-->
+<!--                android:background="@null"-->
+<!--                android:contentDescription="@string/image_rotate"-->
+<!--                android:onClick="onClick"-->
+<!--                android:src="@drawable/image_btn_rotate" />-->
 
 
-            <ImageButton
-                android:id="@+id/ib_clip_16v9"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginLeft="20dp"
-                android:background="@null"
-                android:contentDescription="@string/image_rotate"
-                android:onClick="onClick"
-                android:src="@drawable/image_btn_rotate" />
+<!--            <ImageButton-->
+<!--                android:id="@+id/ib_clip_16v9"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginStart="20dp"-->
+<!--                android:layout_marginLeft="20dp"-->
+<!--                android:background="@null"-->
+<!--                android:contentDescription="@string/image_rotate"-->
+<!--                android:onClick="onClick"-->
+<!--                android:src="@drawable/image_btn_rotate" />-->
 
         </LinearLayout>
 
