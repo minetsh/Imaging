@@ -2,11 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="me.minetsh.imaging.sample">
 
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
         android:name="me.minetsh.imaging.sample.MainApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
@@ -26,6 +30,18 @@
         <activity
             android:name="me.minetsh.imaging.sample.CustomGalleryActivity"
             android:theme="@style/AppGalleryTheme" />
+
+        <provider
+            android:name="me.minetsh.imaging.core.file.IMGProvider"
+            android:authorities="${applicationId}.app.file.provider"
+            android:exported="false"
+            android:grantUriPermissions="true"
+            android:multiprocess="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/image_provider" />
+        </provider>
+
 
     </application>
 

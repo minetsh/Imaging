@@ -1,6 +1,7 @@
 package me.minetsh.imaging.core.sticker;
 
 import android.graphics.Matrix;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -28,6 +29,7 @@ public class IMGStickerMoveHelper {
                 mX = event.getX();
                 mY = event.getY();
                 M.reset();
+                Log.i("xxxxx", v.getTranslationX() + "" + mView.getTranslationX());
                 M.setRotate(v.getRotation());
                 return true;
             case MotionEvent.ACTION_MOVE:

@@ -3,8 +3,11 @@ package me.minetsh.imaging;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.RadioGroup;
 import android.widget.ViewSwitcher;
 
@@ -129,7 +132,11 @@ abstract class IMGEditBaseActivity extends Activity implements View.OnClickListe
 
     @Override
     public final void onCheckedChanged(RadioGroup group, int checkedId) {
-        onColorChanged(mColorGroup.getCheckColor());
+        if (checkedId == R.id.image_eraser) {
+            onColorChanged(Color.TRANSPARENT);
+        } else {
+            onColorChanged(mColorGroup.getCheckColor());
+        }
     }
 
     public void setOpDisplay(int op) {
@@ -174,6 +181,8 @@ abstract class IMGEditBaseActivity extends Activity implements View.OnClickListe
     public abstract void onResetClipClick();
 
     public abstract void onRotateClipClick();
+
+    public abstract void onClipRatioClick(int w, int h);
 
     public abstract void onColorChanged(int checkedColor);
 

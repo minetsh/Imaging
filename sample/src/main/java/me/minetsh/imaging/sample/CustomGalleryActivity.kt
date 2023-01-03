@@ -1,6 +1,7 @@
 package me.minetsh.imaging.sample
 
-import me.minetsh.imaging.IMGGalleryActivity
+import me.minetsh.imaging.gallery.IMGGalleryActivity
+
 
 /**
  * Created by felix on 2018/1/5 下午1:25.

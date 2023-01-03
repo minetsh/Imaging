@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,9 +16,9 @@ import com.facebook.imagepipeline.common.ResizeOptions
 import com.facebook.imagepipeline.common.RotationOptions
 import com.facebook.imagepipeline.request.ImageRequestBuilder
 import kotlinx.android.synthetic.main.activity_gallery_sample.*
-import me.minetsh.imaging.IMGGalleryActivity
-import me.minetsh.imaging.gallery.model.IMGChooseMode
-import me.minetsh.imaging.gallery.model.IMGImageInfo
+import me.minetsh.imaging.gallery.IMGGalleryActivity
+import me.minetsh.imaging.gallery.core.model.IMGChooseMode
+import me.minetsh.imaging.gallery.core.model.IMGImageInfo
 
 /**
  * Created by felix on 2018/1/4 下午4:36.
@@ -41,6 +42,8 @@ class GallerySampleActivity : AppCompatActivity() {
         btn_custom.setOnClickListener {
             chooseImagesFromCustomAlbum()
         }
+
+        Log.i("++++", "hello")
     }
 
     private fun chooseImages() {
@@ -61,19 +64,22 @@ class GallerySampleActivity : AppCompatActivity() {
         builder.setSingleChoose(rg_modes.checkedRadioButtonId == R.id.rb_single)
         builder.setMaxChooseCount(et_max_count.text.toString().toInt())
 
+        Log.i("++++", "a" )
         startActivityForResult(
                 IMGGalleryActivity.newIntent(this, builder.build())
-                        .setClass(this, CustomGalleryActivity::class.java),
+                        .setClass(this, IMGGalleryActivity::class.java),
                 REQ_IMAGE_CHOOSE
         )
     }
 
     private fun onChooseImages(images: List<IMGImageInfo>?) {
+        Log.i("++++++", "" + images?.size )
         mAdapter?.mImages = images
         mAdapter?.notifyDataSetChanged()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        Log.i("++++", "" + requestCode)
         when (requestCode) {
             REQ_IMAGE_CHOOSE -> {
                 if (resultCode == Activity.RESULT_OK) {

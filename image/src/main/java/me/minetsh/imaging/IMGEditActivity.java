@@ -4,7 +4,12 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Bundle;
 import android.text.TextUtils;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import me.minetsh.imaging.core.IMGMode;
 import me.minetsh.imaging.core.IMGText;
@@ -12,10 +17,6 @@ import me.minetsh.imaging.core.file.IMGAssetFileDecoder;
 import me.minetsh.imaging.core.file.IMGDecoder;
 import me.minetsh.imaging.core.file.IMGFileDecoder;
 import me.minetsh.imaging.core.util.IMGUtils;
-
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 /**
  * Created by felix on 2017/11/14 下午2:26.
@@ -32,8 +33,12 @@ public class IMGEditActivity extends IMGEditBaseActivity {
     public static final String EXTRA_IMAGE_SAVE_PATH = "IMAGE_SAVE_PATH";
 
     @Override
-    public void onCreated() {
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
 
+    @Override
+    public void onCreated() {
     }
 
     @Override
@@ -67,7 +72,7 @@ public class IMGEditActivity extends IMGEditBaseActivity {
         }
 
         BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = 1;
+        options.inSampleSize = 2;
         options.inJustDecodeBounds = true;
 
         decoder.decode(options);
@@ -175,6 +180,11 @@ public class IMGEditActivity extends IMGEditBaseActivity {
     @Override
     public void onRotateClipClick() {
         mImgView.doRotate();
+    }
+
+    @Override
+    public void onClipRatioClick(int w, int h) {
+        // TODO
     }
 
     @Override

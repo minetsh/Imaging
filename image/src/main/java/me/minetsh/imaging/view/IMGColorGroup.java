@@ -3,6 +3,7 @@ package me.minetsh.imaging.view;
 import android.content.Context;
 import android.graphics.Color;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.RadioGroup;
 
 /**
